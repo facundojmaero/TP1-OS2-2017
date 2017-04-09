@@ -75,7 +75,7 @@ main( int argc, char *argv[] ) {
     char arroba[2] = "@";
     char dots[2]=":";
 
-    printf("\nPor favor ingrese usuario, ip y puerto\n$ ");
+    printf("\nPor favor ingrese usuario, ip y puerto\n"BOLDBLUE"$ "RESET);
 	do{
 		result = 0;
 		// line = read_line();
@@ -85,7 +85,7 @@ main( int argc, char *argv[] ) {
     	result += parser(line,nada,arroba,&user);
 
 	    if(result<0){
-	        fprintf(stderr, "Comando incorrecto\n$ ");
+	        fprintf(stderr, "Comando incorrecto\n"BOLDBLUE"$ "RESET);
 	        status = 1;
 	        continue;
 	    }
@@ -101,7 +101,7 @@ main( int argc, char *argv[] ) {
 
 		server = gethostbyname( ip );
 		if (server == NULL) {
-			fprintf( stderr,"Error, no existe el host\n" );
+			fprintf( stderr,"Error, no existe el host\n"BOLDBLUE"$ "RESET);
 			status = 1;
 			continue;
 			// exit( 0 );
@@ -118,7 +118,7 @@ main( int argc, char *argv[] ) {
 			// exit( 1 );
 		}//si llegue aca estoy conectado al servidor
 
-		printf("Inserte password: \n$ ");
+		printf("Inserte password: \n"BOLDBLUE"$ "RESET);
 		// line2 = read_line();
 		char line3[10];
 		strcpy(line3,"alfajor");
@@ -134,7 +134,7 @@ main( int argc, char *argv[] ) {
 		readFromSocket(sockfd, buffer);
 
 		if(!strcmp(buffer,"ERROR")){
-			printf("Nombre de usuario y/o contraseña incorrecto\n");
+			printf("Nombre de usuario y/o contraseña incorrecto\n"BOLDBLUE"$ "RESET);
 			status = 1;
 			continue;
 		}
@@ -150,11 +150,7 @@ main( int argc, char *argv[] ) {
 
 	while(1) {
 
-		printf(BOLDBLUE "%s"BOLDGREEN"@%s", user,ip);
-        printf("$ " RESET);
-
-
-		// printf( "%s@%s$ ",user,ip );
+		printf(BOLDBLUE "%s@%s$ "RESET, user,ip);
 		memset( buffer, '\0', TAM );
 		fgets( buffer, TAM-1, stdin );
 
@@ -162,7 +158,7 @@ main( int argc, char *argv[] ) {
 
 		// Verificando si se escribió: fin
 		buffer[strlen(buffer)-1] = '\0';
-		if( !strcmp( "fin", buffer ) ) {
+		if( !strcmp( "desconectar", buffer ) ) {
 			terminar = 1;
 		}
 

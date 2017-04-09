@@ -105,12 +105,13 @@ int main( int argc, char *argv[] ) {
 			sleep(1);
 
 			sendToSocket(newsockfd, "Opciones disponibles:\n"
-				"	$ listar\n"
-				"	$ descargar <nro_estacion>\n"
-				"	$ diario_precipitacion <nro_estacion>\n"
-				"	$ mensual_precipitacion <nro_estacion>\n"
-				"	$ promedio <variable>\n"
-				"	$ desconectar\n");
+				"	listar\n"
+				"	descargar <nro_estacion>\n"
+				"	diario_precipitacion <nro_estacion>\n"
+				"	mensual_precipitacion <nro_estacion>\n"
+				"	promedio <variable>\n"
+				"	desconectar\n"
+				"	ayuda\n");
 
 			while ( 1 ) {
 				readFromSocket(newsockfd,buffer);
