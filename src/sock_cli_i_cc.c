@@ -8,56 +8,7 @@
 #include <time.h>
 #include <unistd.h>
 #include "../include/colors.h"
-#define TAM 256
-
-int 
-parser(char* line, char before[], char after[], char** buff){
-    *buff = NULL;
-    if(strstr(line,before)!=NULL){
-
-        *buff = strstr(line,before) + strlen(before);
-        if((*buff = strtok(*buff,after))!=NULL){
-            return 0;
-        }
-        else
-            return -1;
-    }
-    else
-        return -1;
-}
-
-char *
-read_line(void){
-	char *line = NULL;
-	size_t bufsize = 0;
-	ssize_t read;
-	if ((read = getline(&line, &bufsize, stdin)) != -1){
-		return line;
-	}
-	else{
-		perror("Error reading line");
-		exit(0);
-	}
-}
-
-void 
-sendToSocket(int sockfd, char cadena[]){
-	int n = write( sockfd, cadena, strlen(cadena) );
-	if ( n < 0 ) {
-		perror( "escritura de socket" );
-		exit( 1 );
-	}
-}
-
-void 
-readFromSocket(int sockfd, char buffer[]){
-	memset( buffer, '\0', TAM );
-	int n = read( sockfd, buffer, TAM );
-	if ( n < 0 ) {
-		perror( "lectura de socket" );
-		exit( 1 );
-	}
-}
+#include "../include/funciones_cliente_cc.h"
 
 int 
 main( int argc, char *argv[] ) {
@@ -172,3 +123,53 @@ main( int argc, char *argv[] ) {
 	}
 	return 0;
 } 
+
+
+int 
+parser(char* line, char before[], char after[], char** buff){
+    *buff = NULL;
+    if(strstr(line,before)!=NULL){
+
+        *buff = strstr(line,before) + strlen(before);
+        if((*buff = strtok(*buff,after))!=NULL){
+            return 0;
+        }
+        else
+            return -1;
+    }
+    else
+        return -1;
+}
+
+char *
+read_line(void){
+	char *line = NULL;
+	size_t bufsize = 0;
+	ssize_t read;
+	if ((read = getline(&line, &bufsize, stdin)) != -1){
+		return line;
+	}
+	else{
+		perror("Error reading line");
+		exit(0);
+	}
+}
+
+void 
+sendToSocket(int sockfd, char cadena[]){
+	int n = write( sockfd, cadena, strlen(cadena) );
+	if ( n < 0 ) {
+		perror( "escritura de socket" );
+		exit( 1 );
+	}
+}
+
+void 
+readFromSocket(int sockfd, char buffer[]){
+	memset( buffer, '\0', TAM );
+	int n = read( sockfd, buffer, TAM );
+	if ( n < 0 ) {
+		perror( "lectura de socket" );
+		exit( 1 );
+	}
+}

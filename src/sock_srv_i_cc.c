@@ -6,60 +6,17 @@
 #include <netinet/in.h>
 #include <time.h>
 #include <unistd.h>
-#define TAM 256
+#include "../include/funciones_servidor_cc.h"
 
-const char correctUsername[20] = "facundo";
-const char correctPassword[20] = "alfajor";
-#define errormsg "ERROR"
-#define okmsg "OK"
-
-void sendToSocket(int sockfd, char cadena[]){
-	int n = write( sockfd, cadena, strlen(cadena));
-	if ( n < 0 ) {
-		perror( "escritura de socket" );
-		exit( 1 );
-	}
-}
-
-void readFromSocket(int sockfd, char buffer[]){
-	memset( buffer, '\0', TAM );
-	int n = read( sockfd, buffer, TAM-1 );
-	if ( n < 0 ) {
-		perror( "lectura de socket" );
-		exit( 1 );
-	}
-}
-
-
-
-int main( int argc, char *argv[] ) {
-	int sockfd, newsockfd, puerto, pid;
-	socklen_t clilen;
+int 
+main( int argc, char *argv[] ) {
+	int sockfd, newsockfd, pid;
+	int status = 1;
 	char buffer[TAM];
 	struct sockaddr_in serv_addr, cli_addr;
-	int status=1;
+	socklen_t clilen;
 
-	sockfd = socket( AF_INET, SOCK_STREAM, 0);
-	if ( sockfd < 0 ) { 
-		perror( " apertura de socket ");
-		exit( 1 );
-	}
-
-	memset( (char *) &serv_addr, 0, sizeof(serv_addr) );
-	puerto = 6020;
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = INADDR_ANY;
-	serv_addr.sin_port = htons( puerto );
-
-	if ( bind(sockfd, ( struct sockaddr *) &serv_addr, sizeof( serv_addr ) ) < 0 ) {
-		perror( "ligadura" );
-		exit( 1 );
-	}
-
-        printf( "Proceso: %d - socket disponible: %d\n", getpid(), ntohs(serv_addr.sin_port) );
-
-	listen( sockfd, 5 );
-	clilen = sizeof( cli_addr );
+	startServer(&sockfd, &clilen, &serv_addr, &cli_addr);
 
 	while( 1 ) {
 		newsockfd = accept( sockfd, (struct sockaddr *) &cli_addr, &clilen );
@@ -105,13 +62,13 @@ int main( int argc, char *argv[] ) {
 			sleep(1);
 
 			sendToSocket(newsockfd, "Opciones disponibles:\n"
-				"	listar\n"
-				"	descargar <nro_estacion>\n"
-				"	diario_precipitacion <nro_estacion>\n"
-				"	mensual_precipitacion <nro_estacion>\n"
-				"	promedio <variable>\n"
-				"	desconectar\n"
-				"	ayuda\n");
+									"	listar\n"
+									"	descargar <nro_estacion>\n"
+									"	diario_precipitacion <nro_estacion>\n"
+									"	mensual_precipitacion <nro_estacion>\n"
+									"	promedio <variable>\n"
+									"	desconectar\n"
+									"	ayuda\n");
 
 			while ( 1 ) {
 				readFromSocket(newsockfd,buffer);
@@ -136,3 +93,49 @@ int main( int argc, char *argv[] ) {
 	}
 	return 0; 
 } 
+
+void 
+sendToSocket(int sockfd, char cadena[]){
+	int n = write( sockfd, cadena, strlen(cadena));
+	if ( n < 0 ) {
+		perror( "escritura de socket" );
+		exit( 1 );
+	}
+}
+
+void 
+readFromSocket(int sockfd, char buffer[]){
+	memset( buffer, '\0', TAM );
+	int n = read( sockfd, buffer, TAM-1 );
+	if ( n < 0 ) {
+		perror( "lectura de socket" );
+		exit( 1 );
+	}
+}
+
+void 
+startServer(int* sockfd, socklen_t* clilen, struct sockaddr_in* serv_addr,struct sockaddr_in* cli_addr){
+	int puerto;
+
+	*sockfd = socket( AF_INET, SOCK_STREAM, 0);
+	if ( *sockfd < 0 ) { 
+		perror( " apertura de socket ");
+		exit( 1 );
+	}
+
+	memset( (char *) serv_addr, 0, sizeof(*serv_addr) );
+	puerto = 6020;
+	serv_addr->sin_family = AF_INET;
+	serv_addr->sin_addr.s_addr = INADDR_ANY;
+	serv_addr->sin_port = htons( puerto );
+
+	if ( bind(*sockfd, ( struct sockaddr *) serv_addr, sizeof( *serv_addr ) ) < 0 ) {
+		perror( "ligadura" );
+		exit( 1 );
+	}
+
+        printf( "Proceso: %d - socket disponible: %d\n", getpid(), ntohs(serv_addr->sin_port) );
+
+	listen( *sockfd, 5 );
+	*clilen = sizeof( *cli_addr );
+}
