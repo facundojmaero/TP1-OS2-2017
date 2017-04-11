@@ -10,9 +10,12 @@
 #include "../include/colors.h"
 #include "../include/funciones_cliente_cc.h"
 
+int sendToSocket2(int sockfd, char cadena[]);
+int readFromSocket2(int sockfd, char cadena[], int tam);
+
 int 
 main( int argc, char *argv[] ) {
-	int sockfd, puerto;
+	int sockfd, puerto, socketResult;
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
 	int terminar = 0, status;
@@ -81,8 +84,8 @@ main( int argc, char *argv[] ) {
 		printf("%s\n", user_pw);
 
 		//envio user + password a servidor
-		sendToSocket(sockfd,user_pw);
-		readFromSocket(sockfd, buffer);
+		socketResult = sendToSocket(sockfd,user_pw);
+		socketResult = readFromSocket(sockfd,buffer);
 
 		if(!strcmp(buffer,"ERROR")){
 			printf("Nombre de usuario y/o contraseña incorrecto\n"BOLDBLUE"$ "RESET);
@@ -96,16 +99,15 @@ main( int argc, char *argv[] ) {
 		}
 	}while(status);
 
-	readFromSocket(sockfd,buffer);
-	printf("%s\n", buffer);
+	socketResult = readFromSocket(sockfd,buffer);
+	printf("%*.*s\n", socketResult, socketResult, buffer);
 
 	while(1) {
 
 		printf(BOLDBLUE "%s@%s$ "RESET, user,ip);
-		memset( buffer, '\0', TAM );
 		fgets( buffer, TAM-1, stdin );
 
-		sendToSocket(sockfd, buffer);
+		socketResult = sendToSocket(sockfd, buffer);
 
 		// Verificando si se escribió: fin
 		buffer[strlen(buffer)-1] = '\0';
@@ -113,9 +115,15 @@ main( int argc, char *argv[] ) {
 			terminar = 1;
 		}
 
-		readFromSocket(sockfd, buffer);
+		while( 1 ){
+			socketResult = readFromSocket(sockfd, buffer);
+			if(!strcmp(buffer, endMsg)){
+				break;
+			}
+			printf("%*.*s\n", socketResult, socketResult, buffer);
+		}
 
-		printf( "Respuesta: %s\n", buffer );
+
 		if( terminar ) {
 			printf( "Finalizando ejecución\n" );
 			exit(0);
@@ -155,21 +163,27 @@ read_line(void){
 	}
 }
 
-void 
-sendToSocket(int sockfd, char cadena[]){
-	int n = write( sockfd, cadena, strlen(cadena) );
-	if ( n < 0 ) {
-		perror( "escritura de socket" );
-		exit( 1 );
-	}
+int 
+sendToSocket(int sockfd, char buffer[]){
+	int datalen = strlen(buffer);
+	int tmp = htonl(datalen);
+	int n = write(sockfd, (char*)&tmp, sizeof(tmp));
+	if (n < 0) perror("ERROR writing to socket");
+	n = write(sockfd, buffer, datalen);
+	if (n < 0) perror("ERROR writing to socket");
+	return n;
 }
 
-void 
-readFromSocket(int sockfd, char buffer[]){
+int 
+readFromSocket(int sockfd,char buffer[]){
 	memset( buffer, '\0', TAM );
-	int n = read( sockfd, buffer, TAM );
-	if ( n < 0 ) {
-		perror( "lectura de socket" );
-		exit( 1 );
-	}
+	int buflen;
+	int n = read(sockfd, (char*)&buflen, sizeof(buflen));
+	if (n < 0) perror("ERROR reading from socket");
+	buflen = ntohl(buflen);
+	n = read(sockfd, buffer, buflen);
+	if (n < 0) perror("ERROR reading from socket");
+	// else printf("%*.*s\n", n, n, buffer);
+	return n;
 }
+

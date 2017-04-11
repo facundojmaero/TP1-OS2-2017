@@ -1,6 +1,7 @@
-#define TAM 256
+#define TAM 500//256
+#define endMsg "/END"
 
 int parser(char* line, char before[], char after[], char** buff);
 char *read_line(void);
-void sendToSocket(int sockfd, char cadena[]);
-void readFromSocket(int sockfd, char buffer[]);
+int sendToSocket(int sockfd, char cadena[]);
+int readFromSocket(int sockfd, char buffer[]);
