@@ -24,7 +24,7 @@ sock_srv_i_cc: sock_srv_i_cc.o
 sock_cli_i_cc.o: $(SRCDIR)/sock_cli_i_cc.c $(LDIR)/colors.h $(LDIR)/funciones_cliente_cc.h
 	$(CC) $(CFLAGS) -c $< -o $(ODIR)/$@
 
-sock_srv_i_cc.o: $(SRCDIR)/sock_srv_i_cc.c $(LDIR)/funciones_servidor_cc.h
+sock_srv_i_cc.o: $(SRCDIR)/sock_srv_i_cc.c $(LDIR)/colors.h $(LDIR)/funciones_servidor_cc.h
 	$(CC) $(CFLAGS) -c $< -o $(ODIR)/$@
 
 cppcheck:

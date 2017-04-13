@@ -10,15 +10,12 @@
 #include "../include/colors.h"
 #include "../include/funciones_cliente_cc.h"
 
-int sendToSocket2(int sockfd, char cadena[]);
-int readFromSocket2(int sockfd, char cadena[], int tam);
-
 int 
 main( int argc, char *argv[] ) {
 	int sockfd, puerto, socketResult;
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
-	int terminar = 0, status;
+	int status;
 	// char* line, *line2;
 	char password[TAM], user_pw[TAM];
 	char buffer[TAM];
@@ -103,31 +100,23 @@ main( int argc, char *argv[] ) {
 	printf("%*.*s\n", socketResult, socketResult, buffer);
 
 	while(1) {
-
-		printf(BOLDBLUE "%s@%s$ "RESET, user,ip);
+		printf(BOLDBLUE "%s@%s $ "RESET, user,ip);
 		fgets( buffer, TAM-1, stdin );
 
 		socketResult = sendToSocket(sockfd, buffer);
-
-		// Verificando si se escribió: fin
-		buffer[strlen(buffer)-1] = '\0';
-		if( !strcmp( "desconectar", buffer ) ) {
-			terminar = 1;
-		}
 
 		while( 1 ){
 			socketResult = readFromSocket(sockfd, buffer);
 			if(!strcmp(buffer, endMsg)){
 				break;
 			}
+			else if(!strcmp(buffer, disconnectMsg)){
+				printf( "Finalizando ejecución\n" );
+				exit(0);
+			}
 			printf("%*.*s\n", socketResult, socketResult, buffer);
 		}
-
-
-		if( terminar ) {
-			printf( "Finalizando ejecución\n" );
-			exit(0);
-		}
+		memset( buffer, '\0', TAM );
 	}
 	return 0;
 } 

@@ -4,11 +4,25 @@ const char correctPassword[20] = "alfajor";
 #define errormsg "ERROR"
 #define okmsg "OK"
 #define endMsg "/END"
+#define disconnectMsg "/BYE"
+#define argErrorMsg "Comando incorrecto"
 const int inicioEstaciones = 2;
 const int NRO_ESTACIONES = 5;
 const int NRO_SENSORES = 16;
 #define LSH_TOK_BUFSIZE 64
 #define LSH_TOK_DELIM " \t\r\n\a"
+
+const char * functionNames[] = {
+    "ayuda",
+    "desconectar",
+    "listar",
+    "mensual_precip",
+    "diario_precip",
+    "descargar",
+    "promedio"
+};
+
+const int NRO_FUNCIONES = (sizeof (functionNames) / sizeof (const char *));
 
 struct SensorDisponible
 {
@@ -18,9 +32,6 @@ struct SensorDisponible
 
 struct DatoEstacion 
 {
-   int     numero;
-   char    estacion[50];
-   float   id;
    char    fecha[50];
    char    dia[20];
    float   temp;
@@ -47,10 +58,14 @@ struct Estacion
     int index;
     int cantElem;
     struct SensorDisponible sensores[16];
+    int     numero;
+    char    nombre[50];
+    int     idLocalidad;
 };
 
 int sendToSocket(int sockfd, char cadena[]);
 int readFromSocket(int sockfd, char buffer[]);
 void startServer(int* sockfd, socklen_t* clilen, struct sockaddr_in* serv_addr,struct sockaddr_in* cli_addr);
-char **split_line(char *line);
+int split_line(char *line, char** tokens);
 void mensualPrecipitacion(struct Estacion estaciones[], int nroEstacion, int newsockfd);
+void argError(int newsockfd);
