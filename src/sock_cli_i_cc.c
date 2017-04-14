@@ -29,7 +29,7 @@ main( int argc, char *argv[] ) {
     printf("\nPor favor ingrese usuario, ip y puerto\n"BOLDBLUE"$ "RESET);
 	do{
 		result = 0;
-		// line = read_line();
+		// char *line = read_line();
 		char line[100] = "facundo@localhost:6020";
 		result += parser(line,dots,nada,&port);
     	result += parser(line,arroba,dots,&ip);
@@ -70,14 +70,14 @@ main( int argc, char *argv[] ) {
 		}//si llegue aca estoy conectado al servidor
 
 		printf("Inserte password: \n"BOLDBLUE"$ "RESET);
-		// line2 = read_line();
+		// char *line2 = read_line();
 		char line3[10];
 		strcpy(line3,"alfajor");
 		strcpy(password,line3);
 		strcpy(user_pw,user);
 		strcat(user_pw," ");
 		strcat(user_pw,password);
-
+		// sscanf(line2,"%s",user_pw);
 		printf("%s\n", user_pw);
 
 		//envio user + password a servidor
@@ -102,15 +102,16 @@ main( int argc, char *argv[] ) {
 	while(1) {
 		printf(BOLDBLUE "%s@%s $ "RESET, user,ip);
 		fgets( buffer, TAM-1, stdin );
+		printf("buffer |%s|\n",buffer );
 
 		socketResult = sendToSocket(sockfd, buffer);
 
 		while( 1 ){
 			socketResult = readFromSocket(sockfd, buffer);
-			if(!strcmp(buffer, endMsg)){
+			if (strcmp(buffer, endMsg) == 0){
 				break;
 			}
-			else if(!strcmp(buffer, disconnectMsg)){
+			else if (strcmp(buffer, disconnectMsg) == 0){
 				printf( "Finalizando ejecución\n" );
 				exit(0);
 			}
@@ -172,7 +173,6 @@ readFromSocket(int sockfd,char buffer[]){
 	buflen = ntohl(buflen);
 	n = read(sockfd, buffer, buflen);
 	if (n < 0) perror("ERROR reading from socket");
-	// else printf("%*.*s\n", n, n, buffer);
 	return n;
 }
 

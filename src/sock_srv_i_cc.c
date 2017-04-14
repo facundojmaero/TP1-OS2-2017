@@ -7,8 +7,124 @@
 #include <time.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <stddef.h>
 #include "../include/funciones_servidor_cc.h"
 #include "../include/colors.h"
+
+size_t
+getVariableOffset(char variable[], int* indiceSensor){
+    if(strcmp(variable, "temp") == 0){
+        *indiceSensor = 0;
+        return (offsetof(struct DatoEstacion, temp));
+    }
+    else if(strcmp(variable, "humedad") == 0){
+        *indiceSensor = 1;
+        return (offsetof(struct DatoEstacion, humedad));
+    }
+    else if(strcmp(variable, "ptoRocio") == 0){
+        *indiceSensor = 2;
+        return (offsetof(struct DatoEstacion, ptoRocio));
+    }
+    else if(strcmp(variable, "precip") == 0){
+        *indiceSensor = 3;
+        return (offsetof(struct DatoEstacion, precip));
+    }
+    else if(strcmp(variable, "velocViento") == 0){
+        *indiceSensor = 4;
+        return (offsetof(struct DatoEstacion, velocViento));
+    }
+    else if(strcmp(variable, "rafagaMax") == 0){
+        *indiceSensor = 6;
+        return (offsetof(struct DatoEstacion, rafagaMax));
+    }
+    else if(strcmp(variable, "presion") == 0){
+        *indiceSensor = 7;
+        return (offsetof(struct DatoEstacion, presion));
+    }
+    else if(strcmp(variable, "radiacion") == 0){
+        *indiceSensor = 8;
+        return (offsetof(struct DatoEstacion, radiacion));
+    }
+    else if(strcmp(variable, "tempSuelo1") == 0){
+        *indiceSensor = 9;
+        return (offsetof(struct DatoEstacion, tempSuelo1));
+    }
+    else if(strcmp(variable, "tempSuelo2") == 0){
+        *indiceSensor = 10;
+        return (offsetof(struct DatoEstacion, tempSuelo2));
+    }
+    else if(strcmp(variable, "tempSuelo3") == 0){
+        *indiceSensor = 11;
+        return (offsetof(struct DatoEstacion, tempSuelo3));
+    }
+    else if(strcmp(variable, "humedadSuelo1") == 0){
+        *indiceSensor = 12;
+        return (offsetof(struct DatoEstacion, humedadSuelo1));
+    }
+    else if(strcmp(variable, "humedadSuelo2") == 0){
+        *indiceSensor = 13;
+        return (offsetof(struct DatoEstacion, humedadSuelo2));
+    }
+    else if(strcmp(variable, "humedadSuelo3") == 0){
+        *indiceSensor = 14;
+        return (offsetof(struct DatoEstacion, humedadSuelo3));
+    }
+    else if(strcmp(variable, "humedadHoja") == 0){
+        *indiceSensor = 15;
+        return (offsetof(struct DatoEstacion, humedadHoja));
+    }
+    else{
+    	*indiceSensor = -1;
+        return -1;
+    }
+}
+
+int
+promediar(struct Estacion stationArray[], char variable[], int newsockfd){
+    size_t longitudElemento = offsetof(struct Estacion, dato[1]);
+    longitudElemento = longitudElemento / 4;
+    //lo convierto a unidades de 4 bytes (float)
+
+    int indiceSensor;
+    size_t offset;
+    char mensaje[TAM];
+    offset = getVariableOffset(variable, &indiceSensor);
+    printf("%lu %d\n", offset, indiceSensor);
+    if(offset > longitudElemento*4){
+        printf("variable inexistente\n");
+        return -1;
+    }
+
+    printf("Promedios variable %s:\n", variable);
+    snprintf(mensaje, TAM, "Promedios variable %s:\n", variable);
+    sendToSocket(newsockfd, mensaje);
+
+    for(int j=0; j < NRO_ESTACIONES; j++){
+        if(stationArray[j].sensores[indiceSensor].esta == 0){
+            printf("%d - %s: No se encuentran datos.\n",stationArray[j].numero, stationArray[j].nombre);
+            snprintf(mensaje,TAM, "%d - %s: No se encuentran datos.",stationArray[j].numero, stationArray[j].nombre);
+            sendToSocket(newsockfd, mensaje);
+            continue;
+        }
+        float* ptr = (float*)((char*)&stationArray[j] + offset);
+        //apunto al primer elemento de la primer estacion, la medicion
+        //del primer dia de la variable que quiero promediar
+
+        float suma = 0;
+
+        for (int i = 0; i < stationArray[j].cantElem; ++i)
+        {
+            suma += *(float*)(ptr+(i*longitudElemento));
+        }
+        
+        suma = suma/stationArray[j].cantElem;
+        printf("%d - %s: %.1f\n", stationArray[j].numero, stationArray[j].nombre,suma);
+        snprintf(mensaje, TAM, "%d - %s: %.1f", stationArray[j].numero, stationArray[j].nombre,suma);;
+        sendToSocket(newsockfd, mensaje);
+    }
+    sendToSocket(newsockfd, endMsg);
+    return 0;	
+}
 
 int
 check_estacion_existente(struct Estacion estaciones[], int *nro){
@@ -341,6 +457,7 @@ main( int argc, char *argv[] ) {
 			    printf("cantidad de tokens: %d\n",numTokens);
 
 			    if(numTokens == 0){
+			    	// sendToSocket(newsockfd,emptyMsg);
 					sendToSocket(newsockfd,endMsg);
 			    }
 
@@ -356,7 +473,6 @@ main( int argc, char *argv[] ) {
 			    		argError(newsockfd);
 			    		continue;
 			    	}
-			    	printf("listar\n");
 			        listarEstaciones(stationArray, newsockfd);
 			    }
 			    else if(!strcmp(args[0],"desconectar")){
@@ -395,7 +511,6 @@ main( int argc, char *argv[] ) {
 			    		argError(newsockfd);
 			    		continue;
 			    	}
-			    	printf("mensual_precip\n");
 			        char caracter;
 			        int numero;
 			        strcpy(&caracter,args[1]);
@@ -407,15 +522,17 @@ main( int argc, char *argv[] ) {
 			    else if(!strcmp(args[0],"ayuda")){
 			    	showHelp(newsockfd);
 			    }
-			    // if(!strcmp(args[0],"promedio") && strlen(args[1])){
-			    //     char caracter;
-			    //     int numero;
-			    //     strcpy(&caracter,args[1]);
-			    //     if(isdigit(caracter)){
-			    //         numero = atoi(&caracter);
-			    //         // mensualPrecipitacion(stationArray[numero],numero);
-			    //     }
-			    // }
+			    if(!strcmp(args[0],"promedio")){
+			    	if(numTokens != 2){
+			    		argError(newsockfd);
+			    		continue;
+			    	}
+			        int result = promediar(stationArray,args[1], newsockfd);
+			        if(result < 0){
+			        	sendToSocket(newsockfd, "Sensor inexistente");
+			        	sendToSocket(newsockfd, endMsg);
+			        }
+			    }
 				////////////////////////////////////////////////////////////////
 				else{
 					argError(newsockfd);
