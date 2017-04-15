@@ -1,15 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h> 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <time.h>
-#include <unistd.h>
-#include <ctype.h>
-#include <stddef.h>
 #include "../include/funciones_servidor_cc.h"
-#include "../include/colors.h"
 
 size_t
 getVariableOffset(char variable[], int* indiceSensor){
@@ -89,20 +78,19 @@ promediar(struct Estacion stationArray[], char variable[], int newsockfd){
     size_t offset;
     char mensaje[TAM];
     offset = getVariableOffset(variable, &indiceSensor);
-    printf("%lu %d\n", offset, indiceSensor);
     if(offset > longitudElemento*4){
         printf("variable inexistente\n");
         return -1;
     }
 
-    printf("Promedios variable %s:\n", variable);
-    snprintf(mensaje, TAM, "Promedios variable %s:\n", variable);
+    printf("Promedios variable "BOLDGREEN"%s:"RESET"\n", variable);
+    snprintf(mensaje, TAM, "Promedios variable "BOLDGREEN"%s:"RESET"\n", variable);
     sendToSocket(newsockfd, mensaje);
 
     for(int j=0; j < NRO_ESTACIONES; j++){
         if(stationArray[j].sensores[indiceSensor].esta == 0){
             printf("%d - %s: No se encuentran datos.\n",stationArray[j].numero, stationArray[j].nombre);
-            snprintf(mensaje,TAM, "%d - %s: No se encuentran datos.",stationArray[j].numero, stationArray[j].nombre);
+            snprintf(mensaje,TAM, "%d - %s: "BOLDRED"No se encuentran datos."RESET,stationArray[j].numero, stationArray[j].nombre);
             sendToSocket(newsockfd, mensaje);
             continue;
         }
@@ -286,6 +274,259 @@ verificarSensores(struct Estacion stationArray[], int j, char* line2,
         token = strtok(NULL, s);
         cuenta++;
     }
+    free(tempstr);
+}
+
+void
+descargarEstacion(int numero, struct Estacion stationArray[], int newsockfd){
+    if(numero >= NRO_ESTACIONES){
+    perror("Intentando guardar estacion inexistente");
+    exit(EXIT_FAILURE);
+    }
+
+    char buffer[TAM];
+
+    //envio aviso inicio de transferencia a cliente
+    sendToSocket(newsockfd, "/START");
+    sendToSocket(newsockfd, endMsg);
+
+    //aca levanto el cliente UDP (se invierten los roles)
+
+    //
+
+    //envio filename y espero ack
+    sendToSocket(newsockfd,"descarga.txt");
+	readFromSocket(newsockfd, buffer); //leo el ack   
+    //
+
+    //envio lineas mientras haya datos para enviar, y espero ack cada vez
+	char linea [350];
+    for(int i=0;i<stationArray[numero].cantElem;i++){
+        snprintf(linea, sizeof(linea), "%d,%s,%d,%s,%.1f,%.1f,%.1f,%.1f,%.1f,%s,%.1f,%.1f,%.1f,%.1f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f",
+        stationArray[numero].numero,
+        stationArray[numero].nombre,
+        stationArray[numero].idLocalidad,
+        stationArray[numero].dato[i].fecha,
+        stationArray[numero].dato[i].temp,
+        stationArray[numero].dato[i].humedad, 
+        stationArray[numero].dato[i].ptoRocio,
+        stationArray[numero].dato[i].precip,
+        stationArray[numero].dato[i].velocViento,
+        stationArray[numero].dato[i].direcViento,
+        stationArray[numero].dato[i].rafagaMax,
+        stationArray[numero].dato[i].presion,
+        stationArray[numero].dato[i].radiacion,
+        stationArray[numero].dato[i].tempSuelo1,
+        stationArray[numero].dato[i].tempSuelo2,
+        stationArray[numero].dato[i].tempSuelo3,
+        stationArray[numero].dato[i].humedadSuelo1,
+        stationArray[numero].dato[i].humedadSuelo2,
+        stationArray[numero].dato[i].humedadSuelo3,
+        stationArray[numero].dato[i].humedadHoja);
+        // fprintf(stationFile, "%s\n",linea);
+        printf("%s\n", linea);
+        sendToSocket(newsockfd, linea);
+    }
+    //
+
+    //envio /END y espero ack
+	sendToSocket(newsockfd,"/FINISH");
+	sendToSocket(newsockfd,endMsg);
+    //
+
+    //cierro el proceso
+	return;//esta bien? ver $ ps
+    //
+
+    // int skipResult = 0;
+    // char fileName[15];
+    // snprintf(fileName, sizeof(fileName), "estacion%d.CSV", nroEstacion);
+    // snprintf(fileName, sizeof(fileName), "estacion.CSV");
+
+    // FILE* stationFile = fopen(fileName,"w");
+
+    // if (stationFile == NULL) {
+    //   perror("Error exporting data");
+    //   exit(EXIT_FAILURE);
+    // }    
+    //////////////////////////////////////////////////////////////////////////
+    //  si el sensor no esta, poner "--"
+    //  ver de guardar archivo con nombre de estacion
+    //////////////////////////////////////////////////////////////////////////
+    // rewind(stream);
+    // printLineToFile(stream, stationFile, 3);
+    // char linea [350];
+    // for(int i=0;i<stationArray[numero].cantElem;i++){
+    //     snprintf(linea, sizeof(linea), "%d,%s,%d,%s,%.1f,%.1f,%.1f,%.1f,%.1f,%s,%.1f,%.1f,%.1f,%.1f,%.0f,%.0f,%.0f,%.0f,%.0f,%.0f",
+    //     stationArray[numero].numero,
+    //     stationArray[numero].nombre,
+    //     stationArray[numero].idLocalidad,
+    //     stationArray[numero].dato[i].fecha,
+    //     stationArray[numero].dato[i].temp,
+    //     stationArray[numero].dato[i].humedad, 
+    //     stationArray[numero].dato[i].ptoRocio,
+    //     stationArray[numero].dato[i].precip,
+    //     stationArray[numero].dato[i].velocViento,
+    //     stationArray[numero].dato[i].direcViento,
+    //     stationArray[numero].dato[i].rafagaMax,
+    //     stationArray[numero].dato[i].presion,
+    //     stationArray[numero].dato[i].radiacion,
+    //     stationArray[numero].dato[i].tempSuelo1,
+    //     stationArray[numero].dato[i].tempSuelo2,
+    //     stationArray[numero].dato[i].tempSuelo3,
+    //     stationArray[numero].dato[i].humedadSuelo1,
+    //     stationArray[numero].dato[i].humedadSuelo2,
+    //     stationArray[numero].dato[i].humedadSuelo3,
+    //     stationArray[numero].dato[i].humedadHoja);
+    //     // fprintf(stationFile, "%s\n",linea);
+    //     printf("%s\n", linea);
+    // }
+
+    // fclose(stationFile);
+	//////
+	// FILE * fp;
+
+	// fp = fopen ("prueba1.CSV", "rb");
+	// int res;
+	// while((res = fread(buffer, sizeof(char), TAM, fp)) > 0){
+	// 	printf("%s", buffer);
+	// 	// sleep(1);
+	// 	// printf("%d\n",res );
+	// 	n = sendto( sockfd, (void *)buffer, TAM, 0, (struct sockaddr *)&dest_addr, tamano_direccion );
+	// 	if ( n < 0 ) {
+	// 		perror( "Escritura en socket" );
+	// 		exit( 1 );
+	// 	}
+	// 	memset( buffer, 0, sizeof( buffer ) );
+	// 	n = recvfrom( sockfd, (void *)buffer, TAM, 0, (struct sockaddr *)&dest_addr, &tamano_direccion );
+	// 	if ( n < 0 ) {
+	// 		perror( "Lectura de socket" );
+	// 		exit( 1 );
+	// 	}
+	// 	if(strcmp(buffer, "/ACK") == 0){
+	// 		//recibi ack, mando la linea que sigue
+	// 	}
+	// }
+
+	// memset( buffer, 0, sizeof( buffer ) );
+	// strcpy(buffer, "/END");
+	// n = sendto( sockfd, (void *)buffer, TAM, 0, (struct sockaddr *)&dest_addr, tamano_direccion );
+	// printf("\n");
+
+	// //espero ack final
+	// n = recvfrom( sockfd, (void *)buffer, TAM, 0, (struct sockaddr *)&dest_addr, &tamano_direccion );
+	// if ( n < 0 ) {
+	// 	perror( "Lectura de socket" );
+	// 	exit( 1 );
+	// }
+
+	// fclose(fp);
+
+	// /////
+	return;
+}
+
+void
+procesar_input(int newsockfd, struct Estacion stationArray[], char buffer[]){
+	char **args;
+	args = malloc(LSH_TOK_BUFSIZE * sizeof(char*));
+	int numTokens;
+	numTokens = split_line(buffer, args);
+	
+    printf("cantidad de tokens: %d\n",numTokens);
+
+    if(numTokens == 0){
+    	printf("mensaje vacio\n");
+		sendToSocket(newsockfd,endMsg);
+    }
+
+    else if(!strcmp(args[0],"listar")){
+    	if(numTokens != 1){
+    		perror("listar");
+    		argError(newsockfd);
+    		return;
+    	}
+        listarEstaciones(stationArray, newsockfd);
+    }
+
+    else if(!strcmp(args[0],"desconectar")){
+        if(numTokens != 1){
+        	perror("desconectar");
+        	argError(newsockfd);
+        	return;
+        }
+        sendToSocket(newsockfd,disconnectMsg);
+    	printf( "PROCESO %d. Como recibí 'fin', termino la ejecución.\n\n", getpid() );
+		exit(0);
+    }
+
+    if(!strcmp(args[0],"descargar")){
+        char caracter;
+        int numero;
+        strcpy(&caracter,args[1]);
+        if(isdigit(caracter)){
+            numero = atoi(&caracter);
+            descargarEstacion(numero, stationArray, newsockfd);
+        }
+    }
+
+    else if(!strcmp(args[0],"diario_precip")){
+    	if(numTokens != 2){
+    		perror("diario_precip");
+    		argError(newsockfd);
+    		return;
+    	}
+        char caracter;
+        int numero;
+        strcpy(&caracter,args[1]);
+        if(isdigit(caracter)){
+            numero = atoi(&caracter);
+            diarioPrecipitacion(stationArray,numero,newsockfd);
+        }
+    }
+
+    else if(!strcmp(args[0],"mensual_precip")){
+    	if(numTokens != 2){
+    		perror("mensual_precip");
+    		argError(newsockfd);
+    		return;
+    	}
+        char caracter;
+        int numero;
+        strcpy(&caracter,args[1]);
+        if(isdigit(caracter)){
+            numero = atoi(&caracter);
+            mensualPrecipitacion(stationArray, numero, newsockfd);
+        }
+    }
+
+    else if(!strcmp(args[0],"ayuda")){
+    	if(numTokens != 1){
+    		perror("ayuda");
+    		argError(newsockfd);
+    		return;
+    	}
+    	showHelp(newsockfd);
+    }
+
+    else if(!strcmp(args[0],"promedio")){
+    	if(numTokens != 2){
+    		perror("promedio");
+    		argError(newsockfd);
+    		return;
+    	}
+        int result = promediar(stationArray,args[1], newsockfd);
+        if(result < 0){
+        	sendToSocket(newsockfd, "Sensor inexistente");
+        	sendToSocket(newsockfd, endMsg);
+        }
+    }
+	else{
+		perror("else");
+		argError(newsockfd);
+	}
+	free(args);
+	memset( buffer, 0, TAM );
 }
 
 int 
@@ -434,115 +675,13 @@ main( int argc, char *argv[] ) {
 				}
 			}
 
-			socketResult = sendToSocket(newsockfd, "Opciones disponibles:\n"
-									"	* listar\n"
-									"	* descargar <nro_estacion>\n"
-									"	* diario_precip <nro_estacion>\n"
-									"	* mensual_precip <nro_estacion>\n"
-									"	* promedio <variable>\n"
-									"	* desconectar\n"
-									"	* ayuda\n");
+			socketResult = sendToSocket(newsockfd, welcome_message);
 
 			while ( 1 ) {
 				socketResult = readFromSocket(newsockfd, buffer);
-
 				printf( "PROCESO %d. ", getpid() );
 				printf("Recibí: %*.*s\n", socketResult, socketResult, buffer);
-
-				char **args;
-				args = malloc(LSH_TOK_BUFSIZE * sizeof(char*));
-				int numTokens;
-				numTokens = split_line(buffer, args);
-				////////////////////////////////////////////////////////////////
-			    printf("cantidad de tokens: %d\n",numTokens);
-
-			    if(numTokens == 0){
-			    	// sendToSocket(newsockfd,emptyMsg);
-					sendToSocket(newsockfd,endMsg);
-			    }
-
-			    // for (int i = 0; i < NRO_FUNCIONES; ++i)
-			    // {
-			    // 	if(!strcmp(args[0], functionNames[i])){
-			    // 		execute(i,)
-			    // 	}
-			    // }
-
-			    if(!strcmp(args[0],"listar")){
-			    	if(numTokens != 1){
-			    		argError(newsockfd);
-			    		continue;
-			    	}
-			        listarEstaciones(stationArray, newsockfd);
-			    }
-			    else if(!strcmp(args[0],"desconectar")){
-			        if(numTokens != 1){
-			        	argError(newsockfd);
-			        	continue;
-			        }
-			        sendToSocket(newsockfd,disconnectMsg);
-		        	printf( "PROCESO %d. Como recibí 'fin', termino la ejecución.\n\n", getpid() );
-					exit(0);
-			    }
-			    // if(!strcmp(args[0],"descargar") && strlen(args[1]) == 1){
-			    //     char caracter;
-			    //     int numero;
-			    //     strcpy(&caracter,args[1]);
-			    //     if(isdigit(caracter)){
-			    //         numero = atoi(&caracter);
-			    //         descargarEstacion(numero,stream,stationArray[numero]);
-			    //     }
-			    // }
-			    else if(!strcmp(args[0],"diario_precip")){
-			    	if(numTokens != 2){
-			    		argError(newsockfd);
-			    		continue;
-			    	}
-			        char caracter;
-			        int numero;
-			        strcpy(&caracter,args[1]);
-			        if(isdigit(caracter)){
-			            numero = atoi(&caracter);
-			            diarioPrecipitacion(stationArray,numero,newsockfd);
-			        }
-			    }
-			    else if(!strcmp(args[0],"mensual_precip")){
-			    	if(numTokens != 2){
-			    		argError(newsockfd);
-			    		continue;
-			    	}
-			        char caracter;
-			        int numero;
-			        strcpy(&caracter,args[1]);
-			        if(isdigit(caracter)){
-			            numero = atoi(&caracter);
-			            mensualPrecipitacion(stationArray, numero, newsockfd);
-			        }
-			    }
-			    else if(!strcmp(args[0],"ayuda")){
-			    	showHelp(newsockfd);
-			    }
-			    if(!strcmp(args[0],"promedio")){
-			    	if(numTokens != 2){
-			    		argError(newsockfd);
-			    		continue;
-			    	}
-			        int result = promediar(stationArray,args[1], newsockfd);
-			        if(result < 0){
-			        	sendToSocket(newsockfd, "Sensor inexistente");
-			        	sendToSocket(newsockfd, endMsg);
-			        }
-			    }
-				////////////////////////////////////////////////////////////////
-				else{
-					argError(newsockfd);
-				}
-				// Verificación de si hay que terminar
-				// buffer[strlen(buffer)-1] = '\0';
-				// else if( !strcmp( "desconectar", buffer ) ) {
-				// 	printf( "PROCESO %d. Como recibí 'fin', termino la ejecución.\n\n", getpid() );
-				// 	exit(0);
-				// }
+				procesar_input(newsockfd, stationArray, buffer);
 			}
 		}
 		else {
@@ -604,7 +743,6 @@ readFromSocket(int sockfd,char buffer[]){
 	buflen = ntohl(buflen);
 	n = read(sockfd, buffer, buflen);
 	if (n < 0) perror("ERROR reading from socket");
-	// else printf("%*.*s\n", n, n, buffer);
 	return n;
 }
 

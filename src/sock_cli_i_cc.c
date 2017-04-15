@@ -1,14 +1,36 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <time.h>
-#include <unistd.h>
-#include "../include/colors.h"
 #include "../include/funciones_cliente_cc.h"
+
+void
+recibir_datos(int sockfd){
+	//levanto servidor UDP (se invierten los roles)
+
+	//
+	char buffer[TAM];
+	//espero filename
+	readFromSocket(sockfd, buffer);
+	sendToSocket(sockfd, "/ACK");
+	//
+
+	//recibo lineas
+	while(1){
+		readFromSocket(sockfd, buffer);
+
+		if(strcmp(buffer, "/FINISH")){
+			sendToSocket(sockfd, "/ACK");
+			break;
+			//termino la transmision
+		}
+
+		printf("%s\n", buffer);
+		//guardo en archivo
+		sendToSocket(sockfd,"/ACK");
+	}
+	//
+
+	//cierro el proceso
+	return;
+	//
+}
 
 int 
 main( int argc, char *argv[] ) {
@@ -20,7 +42,6 @@ main( int argc, char *argv[] ) {
 	char password[TAM], user_pw[TAM];
 	char buffer[TAM];
 	char* user = NULL, *ip = NULL, *port = NULL;
-    int result=0;
 
     char nada[2] = "";
     char arroba[2] = "@";
@@ -28,7 +49,7 @@ main( int argc, char *argv[] ) {
 
     printf("\nPor favor ingrese usuario, ip y puerto\n"BOLDBLUE"$ "RESET);
 	do{
-		result = 0;
+		int result = 0;
 		// char *line = read_line();
 		char line[100] = "facundo@localhost:6020";
 		result += parser(line,dots,nada,&port);
@@ -81,8 +102,8 @@ main( int argc, char *argv[] ) {
 		printf("%s\n", user_pw);
 
 		//envio user + password a servidor
-		socketResult = sendToSocket(sockfd,user_pw);
-		socketResult = readFromSocket(sockfd,buffer);
+		sendToSocket(sockfd,user_pw);
+		readFromSocket(sockfd,buffer);
 
 		if(!strcmp(buffer,"ERROR")){
 			printf("Nombre de usuario y/o contraseña incorrecto\n"BOLDBLUE"$ "RESET);
@@ -102,9 +123,12 @@ main( int argc, char *argv[] ) {
 	while(1) {
 		printf(BOLDBLUE "%s@%s $ "RESET, user,ip);
 		fgets( buffer, TAM-1, stdin );
-		printf("buffer |%s|\n",buffer );
 
-		socketResult = sendToSocket(sockfd, buffer);
+		if(strlen(buffer) == 1){
+			continue;
+		}
+
+		sendToSocket(sockfd, buffer);
 
 		while( 1 ){
 			socketResult = readFromSocket(sockfd, buffer);
@@ -114,6 +138,10 @@ main( int argc, char *argv[] ) {
 			else if (strcmp(buffer, disconnectMsg) == 0){
 				printf( "Finalizando ejecución\n" );
 				exit(0);
+			}
+			else if(strcmp(buffer, "/START") == 0){
+				//inicio rutina de recepcion de datos
+				recibir_datos(sockfd);
 			}
 			printf("%*.*s\n", socketResult, socketResult, buffer);
 		}
@@ -143,8 +171,7 @@ char *
 read_line(void){
 	char *line = NULL;
 	size_t bufsize = 0;
-	ssize_t read;
-	if ((read = getline(&line, &bufsize, stdin)) != -1){
+	if ((getline(&line, &bufsize, stdin)) != -1){
 		return line;
 	}
 	else{

@@ -1,17 +1,29 @@
-#define TAM 500//256
-const char correctUsername[20] = "facundo";
-const char correctPassword[20] = "alfajor";
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h> 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <time.h>
+#include <unistd.h>
+#include <ctype.h>
+#include <stddef.h>
+#include "../include/colors.h"
+
+#define TAM 512
 #define errormsg "ERROR"
 #define okmsg "OK"
 #define endMsg "/END"
 #define disconnectMsg "/BYE"
 #define argErrorMsg "Comando incorrecto"
-const int inicioEstaciones = 2;
-const int NRO_ESTACIONES = 5;
-const int NRO_SENSORES = 16;
 #define LSH_TOK_BUFSIZE 64
 #define LSH_TOK_DELIM " \t\r\n\a"
 
+const char correctUsername[20] = "facundo";
+const char correctPassword[20] = "alfajor";
+const int inicioEstaciones = 2;
+const int NRO_ESTACIONES = 5;
+const int NRO_SENSORES = 16;
 const char * functionNames[] = {
     "ayuda",
     "desconectar",
@@ -21,8 +33,16 @@ const char * functionNames[] = {
     "descargar",
     "promedio"
 };
-
 const int NRO_FUNCIONES = (sizeof (functionNames) / sizeof (const char *));
+
+char welcome_message[TAM] = "Opciones disponibles:\n"
+									"	* listar\n"
+									"	* descargar <nro_estacion>\n"
+									"	* diario_precip <nro_estacion>\n"
+									"	* mensual_precip <nro_estacion>\n"
+									"	* promedio <variable>\n"
+									"	* desconectar\n"
+									"	* ayuda\n";
 
 struct SensorDisponible
 {
