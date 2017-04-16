@@ -1,0 +1,14 @@
+var searchData=
+[
+  ['send_5fto_5fsocket',['send_to_socket',['../funciones__cliente__cc_8h.html#ab4616618f3445c56eb825485ad233ee9',1,'send_to_socket(int sockfd, char cadena[]):&#160;funciones_io.c'],['../funciones__servidor__cc_8h.html#ab4616618f3445c56eb825485ad233ee9',1,'send_to_socket(int sockfd, char cadena[]):&#160;funciones_io.c'],['../funciones__io_8c.html#a22751d0edda076f8f9f06e177903809a',1,'send_to_socket(int sockfd, char buffer[]):&#160;funciones_io.c']]],
+  ['send_5fudp',['send_udp',['../funciones__cliente__cc_8h.html#aae96cccd62dade1da0cbce6b421bba9c',1,'send_udp(int sockfd, char buffer[], struct sockaddr_in *serv_addr, socklen_t tamano_direccion):&#160;funciones_io.c'],['../funciones__servidor__cc_8h.html#aae96cccd62dade1da0cbce6b421bba9c',1,'send_udp(int sockfd, char buffer[], struct sockaddr_in *serv_addr, socklen_t tamano_direccion):&#160;funciones_io.c'],['../funciones__io_8c.html#aae96cccd62dade1da0cbce6b421bba9c',1,'send_udp(int sockfd, char buffer[], struct sockaddr_in *serv_addr, socklen_t tamano_direccion):&#160;funciones_io.c']]],
+  ['sensor_5fdisponible',['sensor_disponible',['../structsensor__disponible.html',1,'']]],
+  ['sensores',['sensores',['../struct_estacion.html#a25266d23a973ef8ea702279d1bcd17f4',1,'Estacion']]],
+  ['show_5fhelp',['show_help',['../funciones__servidor__cc_8h.html#a880b6c0c674955eafc4a0c85e7e5b17c',1,'show_help(int newsockfd):&#160;sock_srv_i_cc.c'],['../sock__srv__i__cc_8c.html#a880b6c0c674955eafc4a0c85e7e5b17c',1,'show_help(int newsockfd):&#160;sock_srv_i_cc.c']]],
+  ['skip_5flines',['skip_lines',['../funciones__servidor__cc_8h.html#a6536707e92b696cd95b115212043a0e1',1,'skip_lines(FILE *stream, int lines):&#160;funciones_server.c'],['../funciones__server_8c.html#a6536707e92b696cd95b115212043a0e1',1,'skip_lines(FILE *stream, int lines):&#160;funciones_server.c']]],
+  ['sock_5fcli_5fi_5fcc_2ec',['sock_cli_i_cc.c',['../sock__cli__i__cc_8c.html',1,'']]],
+  ['sock_5fsrv_5fi_5fcc_2ec',['sock_srv_i_cc.c',['../sock__srv__i__cc_8c.html',1,'']]],
+  ['split_5fline',['split_line',['../funciones__servidor__cc_8h.html#ae92d5b85086ba1a45345ecc831ec9c79',1,'split_line(char *line, char **tokens):&#160;funciones_server.c'],['../funciones__server_8c.html#ae92d5b85086ba1a45345ecc831ec9c79',1,'split_line(char *line, char **tokens):&#160;funciones_server.c']]],
+  ['start_5fserver',['start_server',['../funciones__servidor__cc_8h.html#a0d3dcbd8aeaba5ce0513ec8a0906ac9b',1,'start_server(int *sockfd, socklen_t *clilen, struct sockaddr_in *serv_addr, struct sockaddr_in *cli_addr):&#160;funciones_server.c'],['../funciones__server_8c.html#a0d3dcbd8aeaba5ce0513ec8a0906ac9b',1,'start_server(int *sockfd, socklen_t *clilen, struct sockaddr_in *serv_addr, struct sockaddr_in *cli_addr):&#160;funciones_server.c']]],
+  ['start_5fudp_5fmsg',['start_UDP_Msg',['../comunes_8h.html#a4a3473f2c8d43594d7c8582717c7a54f',1,'comunes.h']]]
+];

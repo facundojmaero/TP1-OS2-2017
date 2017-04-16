@@ -24,4 +24,13 @@
 * 	"./sock_cli_i_cc"	--> Ejecuta el programa cliente.
 * 	"./sock_srv_i_cc"	--> Ejecuta el programa servidor.
 *
+* @par EJECUCIÓN:
+* Para ejecutar el programa servidor, utilizar el comando "./sock_srv_i_cc".
+* Para ejecutar el programa cliente, utilizar el comando "./sock_cli_c_cc".
+* Para acceder al servidor desde el cliente, utilizar la IP del servidor con el comando:
+* facundo@<IP_Servidor>:6020.
+* La contraseña de acceso es "alfajor".
+* Para solicitar ayuda, escriba "ayuda".
+*
+*
 */

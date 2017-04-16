@@ -1,3 +1,11 @@
+/** @file colors.h
+ *  @brief Codigos de impresión de colores por stdout
+ *
+ *
+ *  @author Facundo Maero
+ */
+
+
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */
 #define RED     "\033[31m"      /* Red */
