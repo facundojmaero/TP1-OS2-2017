@@ -1,33 +1,138 @@
-#include "../include/funciones_cliente_cc.h"
+#include "../include/funciones_cliente_cc.h"   
+
+int initialize_udp_server_with_args(socklen_t *tamano_direccion , struct sockaddr_in* serv_addr){
+	int sockudp, puerto;//, tamano_direccion;
+	// unsigned char buffer[ TAM ];
+	// struct sockaddr_in serv_addr;
+	// int n;
+
+	char *argv[] = {"" ,"6020"};
+
+	sockudp = socket( AF_INET, SOCK_DGRAM, 0 );
+	if (sockudp < 0) { 
+		perror("ERROR en apertura de socket");
+		exit( 1 );
+	}
+
+	memset( serv_addr, 0, sizeof(*serv_addr) );
+	puerto = atoi( argv[1] );
+	serv_addr->sin_family = AF_INET;
+	serv_addr->sin_addr.s_addr = INADDR_ANY;
+	serv_addr->sin_port = htons( puerto );
+	memset( (serv_addr->sin_zero), '\0', 8 );
+
+	if( bind( sockudp, (struct sockaddr *) serv_addr, sizeof(*serv_addr) ) < 0 ) {
+		perror( "ERROR en binding" );
+		exit( 1 );
+	}
+
+    printf( "Socket disponible: %d\n", ntohs(serv_addr->sin_port) );
+
+	*tamano_direccion = sizeof( struct sockaddr );
+	// int bytes_read;
+
+	// // do {
+	//      bytes_read = recvfrom( sockudp, (void*)buffer, TAM, 0, (struct sockaddr *)&serv_addr, &tamano_direccion );
+	//  //     if(strcmp(buffer, "/END") == 0){
+	// 	// 	// printf("recibi /END\n");
+	// 	// 	break;
+	// 	// }
+	//      // if (bytes_read > 0) {
+	//      	// int res = fprintf(fd, "%s",buffer);
+	//         printf("Buffer: %.*s\n", bytes_read, buffer); 
+ //    		bytes_read = sendto( sockudp, (void *)"/ACK", 5, 0, (struct sockaddr *)&serv_addr, tamano_direccion  );
+	// 		if ( n < 0 ) {
+	// 			perror( "escritura en socket" );
+	// 			exit( 1 );
+	// 		}
+	// 		printf("envie /ACK\n");
+	//      // }
+	// // } while (bytes_read > 0);
+
+	// // bytes_read = sendto( sockudp, (void *)"/ACK", 5, 0, (struct sockaddr *)&serv_addr, tamano_direccion  );
+	// // if ( n < 0 ) {
+	// // 	perror( "escritura en socket" );
+	// // 	exit( 1 );
+	// // }
+
+	// // fclose(fd);
+	// close(sockudp);
+	return sockudp;
+}   
+
+void send_udp(int sockfd, char buffer[], struct sockaddr_in* serv_addr, socklen_t tamano_direccion){
+	ssize_t n = sendto( sockfd, (void *)buffer, TAM, 0, (struct sockaddr *) serv_addr, tamano_direccion  );
+	if ( n < 0 ) {
+		perror( "send_udp" );
+		exit( 1 );
+	}
+	return;
+}
+
+void recv_udp(int sockfd, char buffer[], struct sockaddr_in* serv_addr, socklen_t* tamano_direccion){
+	memset( buffer, 0, TAM );
+	ssize_t n = recvfrom( sockfd, buffer, TAM, 0, (struct sockaddr *) serv_addr, tamano_direccion);
+	if ( n < 0 ) {
+		perror( "recv_udp" );
+		exit( 1 );
+	}
+	return;
+}
 
 void
 recibir_datos(int sockfd){
 	//levanto servidor UDP (se invierten los roles)
 
+	socklen_t tamano_direccion;
+	int sockudp;
+	struct sockaddr_in serv_addr;
+	sockudp = initialize_udp_server_with_args(&tamano_direccion , &serv_addr);
+
+	//aviso al servidor que tengo la estructura udp lista
+	sendToSocket(sockfd, "/UDP_READY");
+	printf("envie udp ready\n");
 	//
+
 	char buffer[TAM];
 	//espero filename
-	readFromSocket(sockfd, buffer);
-	sendToSocket(sockfd, "/ACK");
+	recv_udp(sockudp, buffer, &serv_addr, &tamano_direccion);
+	// readFromSocket(sockfd, buffer);
+	printf("recibi filename %s\n",buffer );
+	// sendToSocket(sockfd, "/ACK");
+	send_udp(sockudp, "/ACK", &serv_addr, tamano_direccion);
+	printf("envie ack filename\n");
+	//
+
+	//abro archivo con filename
+	FILE *fd;
+    fd = fopen(buffer, "wb");
 	//
 
 	//recibo lineas
 	while(1){
-		readFromSocket(sockfd, buffer);
+		// printf("esperando en while\n");
+		// readFromSocket(sockfd, buffer);
+		recv_udp(sockudp, buffer, &serv_addr, &tamano_direccion);
 
-		if(strcmp(buffer, "/FINISH")){
-			sendToSocket(sockfd, "/ACK");
+		if(strcmp(buffer, "/FINISH") == 0){
+			// sendToSocket(sockfd, "/ACK");
+			send_udp(sockudp, "/ACK", &serv_addr, tamano_direccion);
 			break;
 			//termino la transmision
 		}
 
-		printf("%s\n", buffer);
+		printf("while: %s\n", buffer);
+	 	fprintf(fd, "%s\n",buffer);	
 		//guardo en archivo
-		sendToSocket(sockfd,"/ACK");
+		// sendToSocket(sockfd,"/ACK");
+		send_udp(sockudp, "/ACK", &serv_addr, tamano_direccion);
 	}
 	//
 
 	//cierro el proceso
+	printf("fin de funcion\n");
+	close(sockudp);
+	fclose(fd);
 	return;
 	//
 }
@@ -50,8 +155,8 @@ main( int argc, char *argv[] ) {
     printf("\nPor favor ingrese usuario, ip y puerto\n"BOLDBLUE"$ "RESET);
 	do{
 		int result = 0;
-		// char *line = read_line();
-		char line[100] = "facundo@localhost:6020";
+		char *line = read_line();
+		// char line[100] = "facundo@localhost:6020";
 		result += parser(line,dots,nada,&port);
     	result += parser(line,arroba,dots,&ip);
     	result += parser(line,nada,arroba,&user);
@@ -91,15 +196,15 @@ main( int argc, char *argv[] ) {
 		}//si llegue aca estoy conectado al servidor
 
 		printf("Inserte password: \n"BOLDBLUE"$ "RESET);
-		// char *line2 = read_line();
-		char line3[10];
-		strcpy(line3,"alfajor");
-		strcpy(password,line3);
+		char *line2 = read_line();
+		// char line3[10];
+		// strcpy(line3,"alfajor");
+		strcpy(password,line2);
 		strcpy(user_pw,user);
 		strcat(user_pw," ");
 		strcat(user_pw,password);
 		// sscanf(line2,"%s",user_pw);
-		printf("%s\n", user_pw);
+		// printf("%s\n", user_pw);
 
 		//envio user + password a servidor
 		sendToSocket(sockfd,user_pw);
@@ -142,6 +247,9 @@ main( int argc, char *argv[] ) {
 			else if(strcmp(buffer, "/START") == 0){
 				//inicio rutina de recepcion de datos
 				recibir_datos(sockfd);
+				// initialize_udp_server();
+				// descargar_estacion();
+
 			}
 			printf("%*.*s\n", socketResult, socketResult, buffer);
 		}

@@ -1,6 +1,5 @@
 CC = gcc
-# CFLAGS = -Wall -pedantic -Werror
-CFLAGS = -Wall -pedantic
+CFLAGS = -Wall -pedantic -Werror
 ODIR=obj
 LDIR=include
 SRCDIR=src

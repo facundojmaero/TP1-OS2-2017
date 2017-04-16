@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <stddef.h>
+#include <netdb.h>
 #include "../include/colors.h"
 
 #define TAM 512
@@ -75,7 +76,6 @@ struct DatoEstacion
 struct Estacion 
 {
     struct DatoEstacion dato[4100];
-    int index;
     int cantElem;
     struct SensorDisponible sensores[16];
     int     numero;
