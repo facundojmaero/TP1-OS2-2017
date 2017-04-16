@@ -1,6 +1,21 @@
+/** @file sock_cli_i_cc.c
+ *  @brief Archivo principal del Cliente.
+ *
+ *  Contiene el programa principal que ejecutará el cliente.
+ *
+ *  @author Facundo Maero
+ */
+
 #include "../include/comunes.h"
 #include "../include/funciones_cliente_cc.h"
 
+/**
+* @brief Función principal del Cliente.
+*
+* Crea un socket de tipo TCP con la IP y el puerto deseados, se conecta con
+* el servidor, proporciona usuario y contraseña. Se encarga de enviar las 
+* instrucciones al mismo y mostrar los resultados por consola.
+*/
 int 
 main( int argc, char *argv[] ) {
 	int sockfd, puerto, socketResult, status;
@@ -13,9 +28,14 @@ main( int argc, char *argv[] ) {
     char arroba[2] = "@";
     char dots[2]=":";
 
+	/*!< Bucle de binding y autenticación con el servidor.*/
     printf("\nPor favor ingrese usuario, ip y puerto\n"BOLDBLUE"$ "RESET);
-	do{
+	do
+	{
+		/*!<  */
 		int result = 0;
+
+		/*!< Se espera input al estilo usuario@IP:puerto */
 		char *line = read_line();
 		result += parser(line,dots,nada,&port);
     	result += parser(line,arroba,dots,&ip);
@@ -50,8 +70,9 @@ main( int argc, char *argv[] ) {
 			perror( "conexion" );
 			status = 1;
 			continue;
-		}//si llegue aca estoy conectado al servidor
+		}
 
+		/*!< Una vez conectado con el servidor, se solicita la contraseña. */
 		printf("Inserte password: \n"BOLDBLUE"$ "RESET);
 		char *line2 = read_line();
 		strcpy(password,line2);
@@ -59,26 +80,33 @@ main( int argc, char *argv[] ) {
 		strcat(user_pw," ");
 		strcat(user_pw,password);
 
-		//envio user + password a servidor
+		/*!< envio user + password a servidor */
 		send_to_socket(sockfd,user_pw);
+		/*!< Leo la respuesta */
 		read_from_socket(sockfd,buffer);
 
+		/*!< Si fue un error, notifica al usuario y pide los datos nuevamente. */
 		if(!strcmp(buffer,"ERROR")){
 			printf("Nombre de usuario y/o contraseña incorrecto\n"BOLDBLUE"$ "RESET);
 			status = 1;
 			continue;
 		}
 
+		/*!< Caso contrario da la bienvenida y pasa a la sección siguiente. */
 		if(!strcmp(buffer,"OK")){
 			printf("Bienvenido %s\n", user);
 			status = 0;
 		}
-	}while(status);
+	}
+	while(status);
 
+	/*!< Lee el mensaje de bienvenida del server */
 	socketResult = read_from_socket(sockfd,buffer);
 	printf("%*.*s\n", socketResult, socketResult, buffer);
 
+	/*!< Bucle principal de la aplicación */
 	while(1) {
+		/*!< Imprime el prompt y lee el comando del usuario */
 		printf(BOLDBLUE "%s@%s $ "RESET, user,ip);
 		fgets( buffer, TAM-1, stdin );
 
@@ -86,19 +114,24 @@ main( int argc, char *argv[] ) {
 			continue;
 		}
 
+		/*!< Lo envia al servidor y empieza a leer respuestas */
 		send_to_socket(sockfd, buffer);
 
 		while( 1 ){
 			socketResult = read_from_socket(sockfd, buffer);
+			/*!< Lee indefinidamente hasta que llegue un flag de fin de mensaje */
 			if (strcmp(buffer, endMsg) == 0){
 				break;
 			}
+			/*!< Si solicite una desconexión, el servidor devuelve el ok
+			 y el proceso ciente finaliza correctamente. */
 			else if (strcmp(buffer, disconnectMsg) == 0){
 				printf( "Finalizando ejecución\n" );
 				exit(0);
 			}
+			/*!< Si se solicitó una descarga por UDP, se recibe el flag correspondiente
+			y se llama a la función que gestiona la transferencia. */
 			else if(strcmp(buffer, start_UDP_Msg) == 0){
-				//inicio rutina de recepcion de datos
 				recibir_datos(sockfd);
 
 			}

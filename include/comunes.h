@@ -1,3 +1,10 @@
+/** @file comunes.h
+ *  @brief Libreria con mensajes e imports comunes al cliente y al servidor.
+ *
+ *
+ *  @author Facundo Maero
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

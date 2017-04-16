@@ -1,3 +1,13 @@
+/** @file funciones_servidor_cc.h
+ *  @brief Libreria principal del servidor
+ *
+ *  Libreria del servidor, con definiciones de mensajes, especificaciones de 
+ *  usuarios y contraseñas válidos, constantes, estructuras y prototipos de
+ *  funciones.
+ *
+ *  @author Facundo Maero
+ */
+
 #include <ctype.h>
 #include <stddef.h>
 #define errormsg "ERROR"
@@ -31,12 +41,16 @@ char welcome_message[TAM] = "Opciones disponibles:\n"
 									"	* desconectar\n"
 									"	* ayuda\n";
 
+/*!< Estructura de un sensor, con campo binario esta (disponible o no),
+y campo nombre. */
 struct sensor_disponible
 {
     int esta;
     char nombreSensor[30];
 };
 
+/*!< Estructura principal de datos de las estaciones. Guarda el contenido de 
+una línea del archivo .CSV */
 struct dato_estacion 
 {
    char    fecha[50];
@@ -59,6 +73,9 @@ struct dato_estacion
    float   humedadHoja;
 }; 
 
+/*!< Estructura de una estacion, con un arreglo de datos (uno por cada 10 minutos),
+la cantidad de elementos o datos que posee, los sensores instalados y sus nombres, 
+su ID, nombre y ID de su localidad. */
 struct Estacion 
 {
     struct dato_estacion dato[4100];
@@ -69,6 +86,7 @@ struct Estacion
     int     idLocalidad;
 };
 
+/*!< Prototipos de funciones */
 int initialize_udp_client_with_args(socklen_t *tamano_direccion , struct sockaddr_in* dest_addr);
 size_t get_variable_offset(char variable[], int* indiceSensor);
 int promediar(struct Estacion stationArray[], char variable[], int newsockfd);

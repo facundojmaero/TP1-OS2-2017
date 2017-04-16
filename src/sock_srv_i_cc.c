@@ -1,15 +1,33 @@
+/** @file sock_srv_i_cc.c
+ *  @brief Archivo principal del Servidor.
+ *
+ *  Contiene el programa principal que ejecutará el servidor, así como las
+ *  funciones principales y aplicaciones que puede invocar el cliente.
+ *
+ *  @author Facundo Maero
+ */
+
 #include "../include/comunes.h"
 #include "../include/funciones_servidor_cc.h"
 
+
+/**
+* @brief Función principal del Servidor.
+*
+* Crea un socket ligado al puerto 6020 de tipo TCP, espera hasta 5 conexiones
+* y ejecuta las funciones que recibe del cliente.
+*/
 int 
 main( int argc, char *argv[] ) {
     int sockfd, newsockfd, pid, status = 1, socketResult;
-    char buffer[TAM];
+    char buffer[TAM]; 
     struct sockaddr_in serv_addr, cli_addr;
     socklen_t clilen;
 
-    start_server(&sockfd, &clilen, &serv_addr, &cli_addr);
+    /*!< Inicio el proceso servidor, levanto el socket en el puerto 6020 (TCP) */
+    start_server(&sockfd, &clilen, &serv_addr, &cli_addr); 
 
+    /*!< Abro el archivo con los datos de los sensores */
     FILE* stream = fopen("../datos_meteorologicos.CSV", "r");
     if (stream == NULL) {
       perror("Error opening CSV table");
@@ -28,10 +46,15 @@ main( int argc, char *argv[] ) {
     int j=0;//numero de estacion
     int idEstacion;
 
+    /*!< Salteo la primer linea y leo el nombre de las columnas */
     skip_lines(stream,INICIO_ESTACIONES-1);
     characters = getline(&nombreColumnas,&len,stream);
+
+    /*!< Creo 16 sensores temporales (uno por cada columna del archivo) */
     struct sensor_disponible sensores_temp[16];
 
+    /*!< Copio el nombre de la columna (el nombre del sensor) en la estruc
+    tura de datos recien declarada */
     int cuenta=0;
     token = strtok(nombreColumnas, s);
     while( token != NULL ) {
@@ -42,17 +65,21 @@ main( int argc, char *argv[] ) {
         cuenta++;
     }
 
+    /*!<  Bucle principal de adquisicion de datos.
+    Leo todas las lineas del archivo una por una y las proceso.*/
     while((characters = getline(&line2,&len,stream)) != -1 ){     
         
+        /*!< Busco el ID de la estacion */
         sscanf(line2,"%d",&idEstacion);
         if (i != 0){
-            //Si no estoy llenando la primer fila
-            //Comparo token (id de estacion) con id de estacion anterior para
-            //ver si pase a otra estacion
+            /*!< Si no es la primera linea de la estacion, comparo el ID
+            con el ID del elemento anterior para ver si pase a una nueva
+            estacion o si estoy en la misma.
+            Esto podria hacerse contando la cantidad de muestras por dia, 
+            pero hay un caso en el que una estacion estuvo apagada un tiempo. */
             if(idEstacion != stationArray[j].numero){
-                //Si el ID es distinto al anterior, 
-                //termine de guardar una estacion y paso a la siguiente
-                //Guardo el tamaño de la estacion (cant lineas)
+                /*!< Si el ID es diferente, paso a guardar datos de la estacion
+                siguiente. Guardo el tamaño de la estacion (i). */
                 stationArray[j].cantElem = i;
                 j++;
                 i=0;
@@ -60,6 +87,8 @@ main( int argc, char *argv[] ) {
             }
         }
 
+        /*!< Extraigo de la linea leida los datos, guardandolos en una variable
+        de tipo dato_estacion, diferenciando valores numericos de alfanumericos */
         sscanf(line2, "%*d,%*[^','],%*d,%[^','],%f,%f,%f"
                                    ",%f,%f,%[^','],%f,%f,%f,%f,%f"
                                    ",%f,%f,%f,%f,%f",
@@ -80,11 +109,14 @@ main( int argc, char *argv[] ) {
                                     &stationArray[j].dato[i].humedadSuelo2,
                                     &stationArray[j].dato[i].humedadSuelo3,
                                     &stationArray[j].dato[i].humedadHoja);
+
+        /*!< De la fecha completa extraigo solo el dia para uso futuro. */
         sscanf(stationArray[j].dato[i].fecha,"%s",stationArray[j].dato[i].dia);
+        
         if(i==0){
             check_sensores(stationArray, j, line2,sensores_temp);
-            //si estoy llenando la primer fila, guardo nombre de estacion
-            //y datos una sola vez
+            /*!< Si estoy llenando la primer fila de la estacion, guardo
+            su ID, nombre y ID de localidad (una vez por cada estacion). */
             sscanf(line2, "%d,%[^','],%d",
                                     &stationArray[j].numero,
                                     stationArray[j].nombre,
@@ -92,11 +124,12 @@ main( int argc, char *argv[] ) {
         }
         i++;
 
-    //Guardo la cantidad de elementos de la ultima estacion
+    /*!< Guardo la cantidad de elementos de la ultima estacion*/
     stationArray[j].cantElem = i;
     }
+    /*!< Fin de bucle de adquisicion de datos */
 
-    //acepto conexiones
+    /*!< Inicio bucle de espera de conexiones cliente.*/
     while( 1 ) {
         newsockfd = accept( sockfd, (struct sockaddr *) &cli_addr, &clilen );
         if ( newsockfd < 0 ) {
@@ -110,9 +143,12 @@ main( int argc, char *argv[] ) {
             exit( 1 );
         }
 
-        if ( pid == 0 ) {  // Proceso hijo
+        if ( pid == 0 ) {
+            /*!< Proceso hijo, gestiona la conexion con un solo cliente */
             close( sockfd );
 
+            /*!< Bucle de login. Leo el usuario y contraseña proporcionados
+            y lo valido.*/
             while ( status ) {
                 memset( buffer, 0, TAM );
                 socketResult = read_from_socket(newsockfd,buffer);
@@ -126,21 +162,26 @@ main( int argc, char *argv[] ) {
                 sscanf(buffer,"%s%s",user,password);
 
                 if(strcmp(user,correct_user) || strcmp(password,correct_pw)){
-                    //no son iguales
+                    /*!< Valor incorrecto, termino el proceso y envio 
+                    mensaje de error. */
                     socketResult = send_to_socket(newsockfd, errormsg);
                     printf("\nwrong password\n");
                     close(newsockfd);
                     exit(0);
                 }
                 else{
+                    /*!< Valor correcto, envio ok y paso a siguiente etapa */
                     socketResult = send_to_socket(newsockfd,okmsg);
                     printf("\ncorrect password\n");
                     status=0;
                 }
             }
 
+            /*!< Envio mensaje de bienvenida al usuario */
             socketResult = send_to_socket(newsockfd, welcome_message);
 
+            /*!< Bucle principal de la aplicacion. Espero instrucciones y las
+            ejecuto. */
             while ( 1 ) {
                 socketResult = read_from_socket(newsockfd, buffer);
                 printf( "PROCESO %d. ", getpid() );
@@ -148,6 +189,8 @@ main( int argc, char *argv[] ) {
                 procesar_input(newsockfd, stationArray, buffer, stream);
             }
         }
+        /*!< Proceso padre, cierra el socket del proceso hijo y vuelve a esperar
+        otra conexión. */
         else {
             printf( "SERVIDOR: Nuevo cliente, que atiende el proceso hijo: %d\n", pid );
             close( newsockfd );
@@ -157,6 +200,16 @@ main( int argc, char *argv[] ) {
     return 0; 
 }
 
+
+/**
+* @brief Inicializa un servidor UDP para la transferencia de logs (puerto 6020).
+*
+* @param *tamano_direccion El tamaño de la direccion del usuario (4 para IPv4).
+* @param *dest_addr Estructura de tipo sockaddr_in donde guardar informacion
+* sobre cliente.
+* @return sockudp El descriptor del socket para poder escribir en el y enviar
+* datos al usuario
+*/
 int 
 initialize_udp_client_with_args(
     socklen_t *tamano_direccion, 
@@ -190,6 +243,22 @@ initialize_udp_client_with_args(
     return sockudp;
 }
 
+/**
+* @brief Calcula el offset de un elemento de una estructura dato_estacion.
+*
+* Permite obtener la distancia en bytes desde el inicio de la estructura
+* dato_estacion a un elemento dado de la estructura, para poder iterar sobre
+* el y calcular su promedio. 
+* Para ello utiliza la macro offsetof(), que en Linux arroja resultados muy
+* buenos.
+* Se compara la cadena ingresada con una lista de comandos validos, y en funcion
+* del resultado se calcula la distancia y se la envía.
+* Si el comando es incorrecto se retorna -1.
+*
+* @param variable[] La cadena de caracteres con la variable a buscar.
+* @param *indiceSensor Puntero a entero donde se guarda el indice del sensor solicitado.
+* @return El offset solicitado desde el inicio de la estructura. 
+*/
 size_t
 get_variable_offset(char variable[], int* indiceSensor){
 
@@ -259,6 +328,19 @@ get_variable_offset(char variable[], int* indiceSensor){
     }
 }
 
+/**
+* @brief Calcula el promedio de una variable dada en todas las estaciones disponibles.
+*
+* Calcula el promedio de la variable solicitada. Primero calcula con aritmetica
+* de punteros la distancia entre el inicio de la estructura de datos y la variable
+* en cuestión.
+* Si la cadena no corresponde a un sensor devuelve error.
+* Envía los resultados al cliente. Si el sensor no está disponible, lo notifica.
+*
+* @param stationArray[] Arreglo con todos los datos de todas las estaciones.
+* @param variable[] Cadena de caracteres con la variable a promediar.
+* @param newsockfd File Descriptor del socket para poder enviar los resultados al cliente.
+*/
 int
 promediar(struct Estacion stationArray[], char variable[], int newsockfd){
     size_t longitudElemento = offsetof(struct Estacion, dato[1]);
@@ -309,6 +391,17 @@ promediar(struct Estacion stationArray[], char variable[], int newsockfd){
     return 0;	
 }
 
+/**
+* @brief Verifica si la estacion solicitada existe o no.
+*
+* Dado un ID de estacion, recorre el arreglo de estaciones y comprueba si se
+* corresponde con una estacion existente. Si es así, devuelve el índice de la
+* misma en el arreglo.
+*
+* @param estaciones[] Arreglo con todos los datos de todas las estaciones.
+* @param *nro Puntero donde guardar el indice de la estacion en el arreglo.
+* @return 1 si la estacion existe, 0 en caso contrario.
+*/
 int
 check_estacion_existente(struct Estacion estaciones[], int *nro){
     for (int i = 0; i < NRO_ESTACIONES; ++i)
@@ -321,6 +414,17 @@ check_estacion_existente(struct Estacion estaciones[], int *nro){
     return 0;
 }
 
+/**
+* @brief Calcula la precipitacion diaria de la estacion dada
+*
+* Dado un ID de estacion, calcula las precipitaciones por día.
+* Valida el ID de estacion, y si el valor es válido, recorre el arreglo de estaciones
+* sumando el valor de precipitaciones y enviando el promedio de cada dia al cliente.
+*
+* @param estaciones[] Arreglo con todos los datos de todas las estaciones.
+* @param nro ID de la estacion solicitada.
+* @param newsockfd File Descriptor del socket para poder enviar los resultados al cliente.
+*/
 void 
 diarioPrecipitacion(struct Estacion estaciones[], int nro, int newsockfd){
 	if(check_estacion_existente(estaciones, &nro) == 0){
@@ -356,6 +460,17 @@ diarioPrecipitacion(struct Estacion estaciones[], int nro, int newsockfd){
     send_to_socket(newsockfd, endMsg);
 }
 
+/**
+* @brief Calcula la precipitacion mensual de la estacion dada
+*
+* Dado un ID de estacion, calcula las precipitaciones del mes.
+* Valida el ID de estacion, y si el valor es válido, recorre el arreglo de estaciones
+* sumando el valor de precipitaciones y enviando el promedio del mes al cliente.
+*
+* @param estaciones[] Arreglo con todos los datos de todas las estaciones.
+* @param nro ID de la estacion solicitada.
+* @param newsockfd File Descriptor del socket para poder enviar los resultados al cliente.
+*/
 void 
 mensual_precip(struct Estacion estaciones[], int nro, int newsockfd){	
 	if(check_estacion_existente(estaciones, &nro) == 0){
@@ -379,6 +494,17 @@ mensual_precip(struct Estacion estaciones[], int nro, int newsockfd){
     send_to_socket(newsockfd, endMsg);
 }
 
+/**
+* @brief Envia una lista de las estaciones, y sus sensores instalados.
+*
+* Envia al cliente una lista con las estaciones en la base de datos, y los
+* sensores que tiene instalada cada una.
+* Revisa el arreglo de sensores que tiene cada estacion, y si esta instalado
+* le avisa al usuario.
+*
+* @param estaciones[] Arreglo con todos los datos de todas las estaciones.
+* @param newsockfd File Descriptor del socket para poder enviar los resultados al cliente.
+*/
 void 
 listar(struct Estacion estaciones[], int newsockfd){
     char mensaje[TAM];
@@ -407,6 +533,14 @@ listar(struct Estacion estaciones[], int newsockfd){
     send_to_socket(newsockfd, endMsg);
 }
 
+/**
+* @brief Envia un mensaje de ayuda al usuario.
+*
+* Envia al cliente un mensaje de ayuda con detalles sobre cada instrucción
+* que acepta el sistema.
+*
+* @param newsockfd File Descriptor del socket para poder enviar los resultados al cliente.
+*/
 void 
 show_help(int newsockfd){
 	char mensaje[2*TAM];
@@ -431,9 +565,25 @@ show_help(int newsockfd){
 	send_to_socket(newsockfd, endMsg);
 }
 
+/**
+* @brief Verifica si los sensores en una estacion estan funcionando o no.
+*
+* Primero copia el nombre de los sensores en cada estacion del arreglo.
+* Luego tokeniza una linea cualquiera de datos de una estacion.
+* Si encuentra en los datos la cadena "--" significa que el sensor no esta disponible.
+* Dependiendo de este resultado, guarda un 1 o un 0 en el campo "esta" del arreglo
+* de sensores de la estacion.
+* 
+*
+* @param stationArray[] Arreglo con todos los datos de todas las estaciones.
+* @param j Indice de la estacion actual en el arreglo
+* @param *line2 Linea de datos de la estacion actual, donde se buscan los "--".
+* @param sensores_temp[] Arreglo de sensores temporal con sus nombres.
+*/
 void 
 check_sensores(struct Estacion stationArray[], int j, char* line2, 
     struct sensor_disponible sensores_temp[] ){
+
     char* tempstr = calloc(strlen(line2)+1, sizeof(char));
     strcpy(tempstr, line2);
     const char s[2] = ",";
@@ -470,6 +620,28 @@ check_sensores(struct Estacion stationArray[], int j, char* line2,
     free(tempstr);
 }
 
+/**
+* @brief Envia la estacion solicitada al cliente por conexion no segura (UDP).
+*
+* Funcion principal de envio de archivos al cliente.
+* Primero verifica si el ID proporcionado corresponde con una estación existente.
+* Envia al cliente por TCP un flag de inicio de proceso UDP.
+* El cliente deberá crear un servidor UDP. Se espera a que lo haga, leyendo por TCP
+* y esperando el flag servidor UDP listo.
+* Se inicializa el cliente UDP, y se utiliza este medio de comunicacion hasta
+* el final de la subrutina.
+* Se envia el nombre del archivo al cliente, y luego se lee de la estructura y
+* se envian los datos solicitados. Luego de cada envio, se espera un
+* mensaje de confirmacion, para solucionar el problema de que los mensajes pueden
+* no llegar en orden.
+* Una vez finalizado se envia al cliente un flag de fin de transmision, se espera
+* la confirmación, y se cierra el socket UDP.
+*
+* @param numero ID de la estacion solicitada.
+* @param stationArray[] Arreglo con todos los datos de todas las estaciones.
+* @param newsockfd File Descriptor del socket para poder enviar los resultados al cliente.
+* @param stream Descriptor del archivo .CSV para buscar la fecha y el nombre de las columnas.
+*/
 void
 descargar_estacion(int numero, struct Estacion stationArray[], int newsockfd, FILE* stream){
     if(check_estacion_existente(stationArray, &numero) == 0){
@@ -587,6 +759,23 @@ descargar_estacion(int numero, struct Estacion stationArray[], int newsockfd, FI
 	return;
 }
 
+
+/**
+* @brief Revisa la instruccion ingresada y ejecuta la subrutina correspondiente.
+*
+* Recibe la instrucción del cliente, la tokeniza y decide en función del resultado.
+* Si es una instrucción vacía, no hace nada.
+* Compara el primer token con una lista de comando válidos, y luego verifica el
+* resto de la cadena ingresada. En caso de solicitar un número, lo verifica.
+* Si todo está en orden, ejecuta la función correspondiente pasándole los
+* parámetros necesarios.
+* 
+*
+* @param newsockfd File Descriptor del socket para poder enviar los resultados al cliente.
+* @param stationArray[] Arreglo con todos los datos de todas las estaciones.
+* @param buffer Cadena con la instruccion recibida del cliente.
+* @param stream Descriptor del archivo .CSV para buscar la fecha y el nombre de las columnas.
+*/
 void
 procesar_input(int newsockfd, struct Estacion stationArray[], char buffer[], FILE* stream){
 	char **args;
@@ -700,6 +889,13 @@ procesar_input(int newsockfd, struct Estacion stationArray[], char buffer[], FIL
 	memset( buffer, 0, TAM );
 } 
 
+/**
+* @brief Envia un mensaje de error de argumentos al cliente.
+*
+* Si los argumentos ingresados no son válidos, se notifica al cliente del error.
+*
+* @param newsockfd File Descriptor del socket para poder enviar el mensaje al cliente.
+*/
 void
 arg_error(int newsockfd){
 	send_to_socket(newsockfd, arg_errorMsg);

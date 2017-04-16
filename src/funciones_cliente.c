@@ -1,6 +1,24 @@
+/** @file funciones_cliente.c
+ *  @brief Archivo principal de funciones del cliente.
+ *
+ *  Contiene las funciones que utiliza el cliente para poder comunicarse
+ *  e interactuar correctamente con el servidor.
+ *
+ *  @author Facundo Maero
+ */
+
 #include "../include/comunes.h"
 #include "../include/funciones_cliente_cc.h"
 
+/**
+* @brief Inicializa un servidor UDP para la transferencia de logs (puerto 6020).
+*
+* @param *tamano_direccion El tamaño de la direccion del servidor (4 para IPv4).
+* @param *dest_addr Estructura de tipo sockaddr_in donde guardar informacion
+* sobre servidor.
+* @return sockudp El descriptor del socket para poder escribir en el y enviar
+* datos al servidor.
+*/
 int 
 initialize_udp_server_with_args(socklen_t *tamano_direccion , struct sockaddr_in* serv_addr){
 	int sockudp, puerto;
@@ -30,6 +48,20 @@ initialize_udp_server_with_args(socklen_t *tamano_direccion , struct sockaddr_in
 	return sockudp;
 }   
 
+/**
+* @brief Recibe datos de descarga de archivos desde el servidor.
+*
+* Recibe datos del servidor, una vez solicitada la descarga de una estación.
+* Primero inicializa un servidor UDP. Avisa al servidor cuando esté listo, y
+* recibe el nombre del archivo a crear.
+* Luego, lo crea y comienza a recibir datos y escribirlos allí. Luego de cada
+* lectura del socket se envía un mensaje de acreditación, para asegurar que los
+* mensajes lleguen en orden y de manera correcta.
+* La transferencia dura hasta que se reciba un flag de fin de transmisión, momento
+* en el que se cierra el socket y el archivo, y finaliza la subrutina.
+*
+* @param sockfd File Descriptor del socket UDP a utilizar.
+*/
 void
 recibir_datos(int sockfd){
 	//levanto servidor UDP (se invierten los roles)
@@ -88,6 +120,17 @@ recibir_datos(int sockfd){
 	//
 }
 
+/**
+* @brief Parsea input del usuario en busca de user, ip y puerto.
+*
+* Busca un token entre los delimitadores before y after en la cadena line.
+*
+* @param *line Cadena ingresada por el usuario.
+* @param before[] delimitador antes del token a buscar.
+* @param after[] delimitador después del token a buscar.
+* @param **buff string donde se devuelve el token encontrado
+* @return 0 si se encontró un token, -1 caso contrario.
+*/
 int 
 parser(char* line, char before[], char after[], char** buff){
     *buff = NULL;
@@ -104,6 +147,11 @@ parser(char* line, char before[], char after[], char** buff){
         return -1;
 }
 
+/**
+* @brief Lee input desde teclado (por stdin), hasta un \n.
+*
+* @return Linea leida.
+*/
 char *
 read_line(void){
 	char *line = NULL;
