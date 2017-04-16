@@ -28,7 +28,7 @@ main( int argc, char *argv[] ) {
     start_server(&sockfd, &clilen, &serv_addr, &cli_addr); 
 
     /*!< Abro el archivo con los datos de los sensores */
-    FILE* stream = fopen("../datos_meteorologicos.CSV", "r");
+    FILE* stream = fopen("datos_meteorologicos.CSV", "r");
     if (stream == NULL) {
       perror("Error opening CSV table");
       exit(EXIT_FAILURE);
