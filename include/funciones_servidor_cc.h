@@ -1,31 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h> 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <time.h>
-#include <unistd.h>
 #include <ctype.h>
 #include <stddef.h>
-#include <netdb.h>
-#include "../include/colors.h"
-
-#define TAM 512
 #define errormsg "ERROR"
 #define okmsg "OK"
-#define endMsg "/END"
-#define disconnectMsg "/BYE"
-#define argErrorMsg "Comando incorrecto"
+#define arg_errorMsg "Comando incorrecto"
 #define LSH_TOK_BUFSIZE 64
 #define LSH_TOK_DELIM " \t\r\n\a"
 
-const char correctUsername[20] = "facundo";
-const char correctPassword[20] = "alfajor";
-const int inicioEstaciones = 2;
+const char correct_user[20] = "facundo";
+const char correct_pw[20] = "alfajor";
+const int INICIO_ESTACIONES = 2;
 const int NRO_ESTACIONES = 5;
 const int NRO_SENSORES = 16;
-const char * functionNames[] = {
+const char * NOMBRE_FUNCIONES[] = {
     "ayuda",
     "desconectar",
     "listar",
@@ -34,7 +20,7 @@ const char * functionNames[] = {
     "descargar",
     "promedio"
 };
-const int NRO_FUNCIONES = (sizeof (functionNames) / sizeof (const char *));
+const int NRO_FUNCIONES = (sizeof (NOMBRE_FUNCIONES) / sizeof (const char *));
 
 char welcome_message[TAM] = "Opciones disponibles:\n"
 									"	* listar\n"
@@ -45,13 +31,13 @@ char welcome_message[TAM] = "Opciones disponibles:\n"
 									"	* desconectar\n"
 									"	* ayuda\n";
 
-struct SensorDisponible
+struct sensor_disponible
 {
     int esta;
     char nombreSensor[30];
 };
 
-struct DatoEstacion 
+struct dato_estacion 
 {
    char    fecha[50];
    char    dia[20];
@@ -75,17 +61,29 @@ struct DatoEstacion
 
 struct Estacion 
 {
-    struct DatoEstacion dato[4100];
+    struct dato_estacion dato[4100];
     int cantElem;
-    struct SensorDisponible sensores[16];
+    struct sensor_disponible sensores[16];
     int     numero;
     char    nombre[50];
     int     idLocalidad;
 };
 
-int sendToSocket(int sockfd, char cadena[]);
-int readFromSocket(int sockfd, char buffer[]);
-void startServer(int* sockfd, socklen_t* clilen, struct sockaddr_in* serv_addr,struct sockaddr_in* cli_addr);
+int initialize_udp_client_with_args(socklen_t *tamano_direccion , struct sockaddr_in* dest_addr);
+size_t get_variable_offset(char variable[], int* indiceSensor);
+int promediar(struct Estacion stationArray[], char variable[], int newsockfd);
+int check_estacion_existente(struct Estacion estaciones[], int *nro);
+void mensual_precip(struct Estacion estaciones[], int nro, int newsockfd);
+void listar(struct Estacion estaciones[], int newsockfd);
+void show_help(int newsockfd);
+int skip_lines(FILE* stream, int lines);
+void check_sensores(struct Estacion stationArray[], int j, char* line2, struct sensor_disponible sensores_temp[] );
+void send_udp(int sockfd, char buffer[], struct sockaddr_in* serv_addr, socklen_t tamano_direccion);
+void recv_udp(int sockfd, char buffer[], struct sockaddr_in* serv_addr, socklen_t* tamano_direccion);
+void descargar_estacion(int numero, struct Estacion stationArray[], int newsockfd, FILE* stream);
+void procesar_input(int newsockfd, struct Estacion stationArray[], char buffer[], FILE* stream);
+int send_to_socket(int sockfd, char cadena[]);
+int read_from_socket(int sockfd, char buffer[]);
+void start_server(int* sockfd, socklen_t* clilen, struct sockaddr_in* serv_addr,struct sockaddr_in* cli_addr);
 int split_line(char *line, char** tokens);
-void mensualPrecipitacion(struct Estacion estaciones[], int nroEstacion, int newsockfd);
-void argError(int newsockfd);
+void arg_error(int newsockfd);

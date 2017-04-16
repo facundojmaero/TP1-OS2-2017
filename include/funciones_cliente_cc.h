@@ -1,18 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <time.h>
-#include <unistd.h>
-#include "../include/colors.h"
-#define TAM 512
-#define endMsg "/END"
-#define disconnectMsg "/BYE"
-
+int initialize_udp_server_with_args(socklen_t *tamano_direccion , struct sockaddr_in* serv_addr);
+void send_udp(int sockfd, char buffer[], struct sockaddr_in* serv_addr, socklen_t tamano_direccion);
+void recv_udp(int sockfd, char buffer[], struct sockaddr_in* serv_addr, socklen_t* tamano_direccion);
+void recibir_datos(int sockfd);
 int parser(char* line, char before[], char after[], char** buff);
 char *read_line(void);
-int sendToSocket(int sockfd, char cadena[]);
-int readFromSocket(int sockfd, char buffer[]);
+int send_to_socket(int sockfd, char cadena[]);
+int read_from_socket(int sockfd, char buffer[]);
