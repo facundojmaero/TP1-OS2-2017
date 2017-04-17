@@ -213,13 +213,12 @@ main( int argc, char *argv[] ) {
 int 
 initialize_udp_client_with_args(
     socklen_t *tamano_direccion, 
-    struct sockaddr_in* dest_addr
-    ){
+    struct sockaddr_in* dest_addr){
     
     int sockudp, puerto;
     struct hostent *server;
 
-    char *argv[] = {"localhost","6020"};
+    char *argv[] = {"192.168.1.4","6020"};
 
     server = gethostbyname( argv[0] );
     if ( server == NULL ) {
@@ -673,10 +672,11 @@ descargar_estacion(int numero, struct Estacion stationArray[], int newsockfd, FI
     sockudp = initialize_udp_client_with_args(&tamano_direccion , &dest_addr);
 
     //envio filename y espero ack
-    // send_to_socket(newsockfd,"descarga.txt");
-    send_udp(sockudp, "descarga.txt", &dest_addr, tamano_direccion);
-	// read_from_socket(newsockfd, buffer); //leo el ack
-    recv_udp(sockudp, buffer, &dest_addr, &tamano_direccion);
+    send_to_socket(newsockfd,"descarga.txt");
+    printf("por enviar descarga.txt\n");
+    // send_udp(sockudp, "descarga.txt", &dest_addr, tamano_direccion);
+	read_from_socket(newsockfd, buffer); //leo el ack
+    // recv_udp(sockudp, buffer, &dest_addr, &tamano_direccion);
     if(strcmp(buffer, ack_msg) != 0){
         perror("descargar_estacion: ack invalido");
         return;

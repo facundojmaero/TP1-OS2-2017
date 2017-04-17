@@ -22,7 +22,7 @@
 */
 void 
 send_udp(int sockfd, char buffer[], struct sockaddr_in* serv_addr, socklen_t tamano_direccion){
-    ssize_t n = sendto( sockfd, (void *)buffer, TAM, 0, (struct sockaddr *) serv_addr, tamano_direccion  );
+    ssize_t n = sendto( sockfd, (void *)buffer, TAM, MSG_CONFIRM, (struct sockaddr *) serv_addr, tamano_direccion  );
     if ( n < 0 ) {
         perror( "send_udp" );
         exit( 1 );
@@ -43,7 +43,7 @@ send_udp(int sockfd, char buffer[], struct sockaddr_in* serv_addr, socklen_t tam
 void 
 recv_udp(int sockfd, char buffer[], struct sockaddr_in* serv_addr, socklen_t* tamano_direccion){
     memset( buffer, 0, TAM );
-    ssize_t n = recvfrom( sockfd, buffer, TAM, 0, (struct sockaddr *) serv_addr, tamano_direccion);
+    ssize_t n = recvfrom( sockfd, buffer, TAM, MSG_WAITALL, (struct sockaddr *) serv_addr, tamano_direccion);
     if ( n < 0 ) {
         perror( "recv_udp" );
         exit( 1 );
