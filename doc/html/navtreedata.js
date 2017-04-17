@@ -2,6 +2,7 @@ var NAVTREE =
 [
   [ "Trabajo Práctico 1 - Sockets", "index.html", [
     [ "main", "index.html", null ],
+    [ "TP1-OS2-2017", "md_TP1-OS2-2017_README.html", null ],
     [ "Data Structures", "annotated.html", [
       [ "Data Structures", "annotated.html", "annotated_dup" ],
       [ "Data Structure Index", "classes.html", null ],

@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>Trabajo Práctico 1 - Sockets: Data Structure Index</title>
+<title>Trabajo Práctico 1 - Sockets: TP1-OS2-2017</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -48,8 +48,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
-      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
-      <li class="current"><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
+      <li class="current"><a href="pages.html"><span>Related&#160;Pages</span></a></li>
+      <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
@@ -69,13 +69,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       </li>
     </ul>
   </div>
-  <div id="navrow2" class="tabs2">
-    <ul class="tablist">
-      <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
-      <li class="current"><a href="classes.html"><span>Data&#160;Structure&#160;Index</span></a></li>
-      <li><a href="functions.html"><span>Data&#160;Fields</span></a></li>
-    </ul>
-  </div>
 </div><!-- top -->
 <div id="side-nav" class="ui-resizable side-nav-resizable">
   <div id="nav-tree">
@@ -88,7 +81,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </div>
 </div>
 <script type="text/javascript">
-$(document).ready(function(){initNavTree('classes.html','');});
+$(document).ready(function(){initNavTree('md_TP1-OS2-2017_README.html','');});
 </script>
 <div id="doc-content">
 <!-- window showing the filter options -->
@@ -107,21 +100,28 @@ $(document).ready(function(){initNavTree('classes.html','');});
 
 <div class="header">
   <div class="headertitle">
-<div class="title">Data Structure Index</div>  </div>
+<div class="title">TP1-OS2-2017 </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="qindex"><a class="qindex" href="#letter_D">D</a>&#160;|&#160;<a class="qindex" href="#letter_E">E</a>&#160;|&#160;<a class="qindex" href="#letter_S">S</a></div>
-<table class="classindex">
-<tr><td rowspan="2" valign="bottom"><a name="letter_E"></a><table border="0" cellspacing="0" cellpadding="0"><tr><td><div class="ah">&#160;&#160;E&#160;&#160;</div></td></tr></table>
-</td><td rowspan="2" valign="bottom"><a name="letter_d"></a><table border="0" cellspacing="0" cellpadding="0"><tr><td><div class="ah">&#160;&#160;d&#160;&#160;</div></td></tr></table>
-</td><td rowspan="2" valign="bottom"><a name="letter_s"></a><table border="0" cellspacing="0" cellpadding="0"><tr><td><div class="ah">&#160;&#160;s&#160;&#160;</div></td></tr></table>
-</td><td></td></tr>
-<tr><td></td></tr>
-<tr><td valign="top"><a class="el" href="struct_estacion.html">Estacion</a>&#160;&#160;&#160;</td><td valign="top"><a class="el" href="structdato__estacion.html">dato_estacion</a>&#160;&#160;&#160;</td><td valign="top"><a class="el" href="structsensor__disponible.html">sensor_disponible</a>&#160;&#160;&#160;</td><td></td></tr>
-<tr><td></td><td></td><td></td><td></td></tr>
+<div class="textblock"><h3>Trabajo Práctico 1 - Sockets</h3>
+<div class="image">
+<img src="http://www.drkappa.net/wp-content/uploads/2015/02/wsiconblog.png"  alt="Icono"/>
+</div>
+ <hr/>
+ <table class="doxtable">
+<tr>
+<th>Autor  </th></tr>
+<tr>
+<td>Maero Facundo - 38479441 </td></tr>
 </table>
-<div class="qindex"><a class="qindex" href="#letter_D">D</a>&#160;|&#160;<a class="qindex" href="#letter_E">E</a>&#160;|&#160;<a class="qindex" href="#letter_S">S</a></div>
-</div><!-- contents -->
+<h2>## 1. Descripción del trabajo </h2>
+<p>Este proyecto permite acceder, controlar y transferir datos telemétricos entre el cliente y un servidor, que recopila logs provenientes de diferentes estaciones sensoras. Provee diversas funciones para la visualización de los datos, y una interfaz por línea de comandos.</p>
+<h2>## 2. Instalación </h2>
+<p>Los siguientes son los comandos útiles para el uso de la aplicación:</p>
+<div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;{$}</div><div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;</div><div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;```$ make clean ```       --&gt; Limpia para una nueva compilación.</div><div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;</div><div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;```$ make cppcheck```     --&gt; Ejecuta el programa CppCheck sobre el proyecto. (Debe estar instalado).</div><div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;</div><div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;```$ ./sock_cli_i_cc```   --&gt; Ejecuta el programa cliente.</div><div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;</div><div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;```$ ./sock_srv_i_cc```   --&gt; Ejecuta el programa servidor.</div><div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;</div><div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;## 3. Ejecución</div><div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;--- </div><div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;Para ejecutar el programa servidor, utilizar el comando </div><div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;```$ ./sock_srv_i_c</div></div><!-- fragment --><p> Para ejecutar el programa cliente, utilizar el comando </p><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;{$}</div><div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160; Para acceder al servidor desde el cliente, utilizar la IP del servidor con el comando: </div><div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160; ```$ facundo@IP_Servidor:602</div></div><!-- fragment --><p>La contraseña de acceso es "alfajor". Para solicitar ayuda, escriba "ayuda".</p>
+<h2>## 4. CppCheck </h2>
+<p>Al compilar y linkear, se genera un archivo donde se guardan los posibles errores y advertencias que encuentre el programa CppCheck al realizar el análisis estático del código. Este archivo se encuentra en: </p><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;TP1-OS2-2017/err.txt</div></div><!-- fragment --><p> Si desea más información, remítase a la documentación proporcionada, que se encuentra en la ruta <code>doc/html/index.html</code> </p>
+</div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->

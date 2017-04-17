@@ -48,6 +48,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
       <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -430,6 +431,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Inicializa un servidor UDP para la transferencia de logs (puerto 6020). </p>
+<p>IMPORTANTE: para que la transferencia funcione el servidor debe conectarse al cliente utilizando su IP. A modo de prueba funciona si se compila con la dirección IP del cliente, si se conoce de antemano. Resta implementar un mecanismo que negocie la dirección y la asigne en tiempo de ejecución.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">*tamano_direccion</td><td>El tamaño de la direccion del usuario (4 para IPv4). </td></tr>
