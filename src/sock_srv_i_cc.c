@@ -204,6 +204,12 @@ main( int argc, char *argv[] ) {
 /**
 * @brief Inicializa un servidor UDP para la transferencia de logs (puerto 6020).
 *
+* IMPORTANTE: para que la transferencia funcione el servidor debe conectarse al 
+* cliente utilizando su IP. A modo de prueba funciona si se compila con la dirección
+* IP del cliente, si se conoce de antemano.
+* Resta implementar un mecanismo que negocie la dirección y la asigne en tiempo
+* de ejecución.
+*
 * @param *tamano_direccion El tamaño de la direccion del usuario (4 para IPv4).
 * @param *dest_addr Estructura de tipo sockaddr_in donde guardar informacion
 * sobre cliente.
@@ -218,7 +224,7 @@ initialize_udp_client_with_args(
     int sockudp, puerto;
     struct hostent *server;
 
-    char *argv[] = {"192.168.1.4","6020"};
+    char *argv[] = {"192.168.1.4","6020"}; 
 
     server = gethostbyname( argv[0] );
     if ( server == NULL ) {
