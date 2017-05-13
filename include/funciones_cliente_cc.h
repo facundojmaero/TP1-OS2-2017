@@ -14,3 +14,4 @@ int parser(char* line, char before[], char after[], char** buff);
 char *read_line(void);
 int send_to_socket(int sockfd, char cadena[]);
 int read_from_socket(int sockfd, char buffer[]);
+void get_ip_address(char address[], int fd);

@@ -87,7 +87,7 @@ struct Estacion
 };
 
 /*!< Prototipos de funciones */
-int initialize_udp_client_with_args(socklen_t *tamano_direccion , struct sockaddr_in* dest_addr);
+int initialize_udp_client_with_args(socklen_t *tamano_direccion , struct sockaddr_in* dest_addr, char address[]);
 size_t get_variable_offset(char variable[], int* indiceSensor);
 int promediar(struct Estacion stationArray[], char variable[], int newsockfd);
 int check_estacion_existente(struct Estacion estaciones[], int *nro);

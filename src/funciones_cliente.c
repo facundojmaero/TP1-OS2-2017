@@ -7,6 +7,12 @@
  *  @author Facundo Maero
  */
 
+
+
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
+#include <arpa/inet.h>
 #include "../include/comunes.h"
 #include "../include/funciones_cliente_cc.h"
 
@@ -48,6 +54,23 @@ initialize_udp_server_with_args(socklen_t *tamano_direccion , struct sockaddr_in
 	return sockudp;
 }   
 
+void
+get_ip_address(char address[], int fd){
+	struct ifreq ifr;
+
+ /* I want to get an IPv4 IP address */
+	ifr.ifr_addr.sa_family = AF_INET;
+
+ /* I want IP address attached to "eth0" */
+	strncpy(ifr.ifr_name, "enp4s0", IFNAMSIZ-1);
+
+	ioctl(fd, SIOCGIFADDR, &ifr);
+
+ /* display result */
+	printf("%s\n", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+	strcpy(address, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+}
+
 /**
 * @brief Recibe datos de descarga de archivos desde el servidor.
 *
@@ -74,7 +97,18 @@ recibir_datos(int sockfd){
 	//aviso al servidor que tengo la estructura udp lista
 	send_to_socket(sockfd, udp_ready);
 	printf("envie udp ready\n");
-	//
+	
+	//////////////////////////////////////////////
+	//Agregado, negociacion de la direccion IP
+	//en tiempo de ejecucion.
+	//Antes de recibir el nombre del archivo por UDP
+	//envio un ultimo mensaje por TCP con la IP del cliente
+	char address[100];
+	get_ip_address(address, sockfd);
+
+	send_to_socket(sockfd, address);
+
+	//////////////////////////////////////////////
 
 	char buffer[TAM];
 	//espero filename
