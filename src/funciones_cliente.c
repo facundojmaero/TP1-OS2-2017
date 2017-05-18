@@ -105,10 +105,7 @@ recibir_datos(int sockfd){
 	char address[100];
 	get_ip_address(address, sockfd);
 
-	// send_to_socket(sockfd, address);
-	char a[15];
-	strcpy(a,"127.0.0.1");
-	send_to_socket(sockfd,a);
+	send_to_socket(sockfd, address);
 	//////////////////////////////////////////////
 
 	char buffer[TAM];
