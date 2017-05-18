@@ -362,14 +362,14 @@ promediar(struct Estacion stationArray[], char variable[], int newsockfd){
         return -1;
     }
 
-    printf("Promedios variable "BOLDGREEN"%s:"RESET"\n", variable);
+    // printf("Promedios variable "BOLDGREEN"%s:"RESET"\n", variable);
     snprintf(mensaje, TAM, "Promedios variable "BOLDGREEN"%s:"RESET"\n", variable);
     send_to_socket(newsockfd, mensaje);
 
     for(int j=0; j < NRO_ESTACIONES; j++){
         if(stationArray[j].sensores[indiceSensor].esta == 0){
-            printf("%d - %s: No se encuentran datos.\n",
-                stationArray[j].numero, stationArray[j].nombre);
+            // printf("%d - %s: No se encuentran datos.\n",
+            //     stationArray[j].numero, stationArray[j].nombre);
             snprintf(mensaje,TAM, "%d - %s: "BOLDRED"No se encuentran datos."RESET,
                 stationArray[j].numero, stationArray[j].nombre);
             send_to_socket(newsockfd, mensaje);
@@ -387,8 +387,8 @@ promediar(struct Estacion stationArray[], char variable[], int newsockfd){
         }
         
         suma = suma/stationArray[j].cantElem;
-        printf("%d - %s: %.1f\n", stationArray[j].numero, 
-            stationArray[j].nombre,suma);
+        // printf("%d - %s: %.1f\n", stationArray[j].numero, 
+        //     stationArray[j].nombre,suma);
         snprintf(mensaje, TAM, "%d - %s: %.1f", stationArray[j].numero, 
             stationArray[j].nombre,suma);;
         send_to_socket(newsockfd, mensaje);
@@ -442,8 +442,8 @@ diarioPrecipitacion(struct Estacion estaciones[], int nro, int newsockfd){
     float precipAcumulada=0;
     char mensaje[TAM];
     int i;
-    printf("Precipitacion acumulada por dia.\n%d - Estacion %s:\n",
-    	estaciones[nro].numero, estaciones[nro].nombre);
+    // printf("Precipitacion acumulada por dia.\n%d - Estacion %s:\n",
+    // 	estaciones[nro].numero, estaciones[nro].nombre);
     snprintf(mensaje, TAM, "Precipitacion acumulada por dia.\n%d - Estacion %s:",
         estaciones[nro].numero, estaciones[nro].nombre);
     send_to_socket(newsockfd, mensaje);
@@ -451,7 +451,7 @@ diarioPrecipitacion(struct Estacion estaciones[], int nro, int newsockfd){
     {
         if(i!=0 && (strcmp(estaciones[nro].dato[i].dia, estaciones[nro].dato[i-1].dia))){
             //termine de recorrer un dia. Sumo todo, muestro y reseteo contador
-            printf("	%s: %.1f mm\n", estaciones[nro].dato[i-1].dia, precipAcumulada);
+            // printf("	%s: %.1f mm\n", estaciones[nro].dato[i-1].dia, precipAcumulada);
             snprintf(mensaje, TAM, "	%s: %.1f mm", 
                 estaciones[nro].dato[i-1].dia, precipAcumulada);
     		send_to_socket(newsockfd, mensaje);
@@ -459,7 +459,7 @@ diarioPrecipitacion(struct Estacion estaciones[], int nro, int newsockfd){
         }
         precipAcumulada+=estaciones[nro].dato[i].precip;
     }
-    printf("	%s: %.1f mm\n", estaciones[nro].dato[i-1].dia, precipAcumulada);
+    // printf("	%s: %.1f mm\n", estaciones[nro].dato[i-1].dia, precipAcumulada);
     snprintf(mensaje, TAM, "	%s: %.1f mm", 
         estaciones[nro].dato[i-1].dia, precipAcumulada);
     send_to_socket(newsockfd, mensaje);
@@ -490,8 +490,8 @@ mensual_precip(struct Estacion estaciones[], int nro, int newsockfd){
     {
         precipAcumulada+=estaciones[nro].dato[i].precip;
     }
-    printf("Precipitacion acumulada mensual.\n%d - Estacion %s: %.1f mm\n", 
-        estaciones[nro].numero,estaciones[nro].nombre,precipAcumulada);
+    // printf("Precipitacion acumulada mensual.\n%d - Estacion %s: %.1f mm\n", 
+    //     estaciones[nro].numero,estaciones[nro].nombre,precipAcumulada);
     char mensaje[TAM];
 
     snprintf(mensaje, TAM, "Precipitacion acumulada mensual.\n%d - ""Estacion %s: %.1f mm\n", 
@@ -514,25 +514,20 @@ mensual_precip(struct Estacion estaciones[], int nro, int newsockfd){
 void 
 listar(struct Estacion estaciones[], int newsockfd){
     char mensaje[TAM];
-    printf("Estaciones disponibles:\n\n");
     snprintf(mensaje, TAM, "Estaciones disponibles:\n");
     send_to_socket(newsockfd, mensaje);
     for (int i = 0; i < NRO_ESTACIONES; ++i)
     {
-        printf("%d - %s. Sensores con datos:\n",
-            estaciones[i].numero,estaciones[i].nombre);
         snprintf(mensaje,TAM,"%d -  %s. Sensores con datos:",
             estaciones[i].numero,estaciones[i].nombre);
         send_to_socket(newsockfd, mensaje);
         for (int j = 0; j < NRO_SENSORES; ++j)
         {
             if(estaciones[i].sensores[j].esta){
-                printf("    %s\n", estaciones[i].sensores[j].nombreSensor);
                 snprintf(mensaje,TAM,"    %s", estaciones[i].sensores[j].nombreSensor);
                 send_to_socket(newsockfd, mensaje);
             }
         }
-        printf("\n\n");
         snprintf(mensaje, TAM, "\n");
         send_to_socket(newsockfd, mensaje);
     }
@@ -550,21 +545,22 @@ listar(struct Estacion estaciones[], int newsockfd){
 void 
 show_help(int newsockfd){
 	char mensaje[2*TAM];
-	strcpy(mensaje,"Ayuda:\n * listar:\n"
+	strcpy(mensaje,"Ayuda:\n"
+    "   * listar:\n"
 	"	Muestra un listado de todas las estaciones que hay en la base de datos,\n" 
 	"	y muestra de que sensores tienen datos en cada una.\n"
-	"* descargar "BOLDGREEN"<nro_estacion>:\n"RESET"" 
+	"  * descargar "BOLDGREEN"<nro_estacion>:\n"RESET"" 
 	"	Descarga un archivo con todos los datos de <nro_estacion>, llamado\n"
 	"	\"estacion.CSV\".\n"
-	"* mensual_precip "BOLDGREEN"<nro_estacion>:\n"RESET""
+	"  * mensual_precip "BOLDGREEN"<nro_estacion>:\n"RESET""
 	"	Muestra el acumulado mensual de la variable precipitacion de la estacion\n"
 	"	dada.\n"
-	"* diario_precip "BOLDGREEN"<nro_estacion>:\n"RESET""
+	"  * diario_precip "BOLDGREEN"<nro_estacion>:\n"RESET""
 	"	Muestra el acumulado diario de la variable precipitacion de la estacion\n"
 	"	dada.\n"
-	"* promedio "BOLDGREEN"<variable>:\n"RESET""
+	"  * promedio "BOLDGREEN"<variable>:\n"RESET""
 	"	Muestra el promedio de las muestras de la variable de cada estacion.\n"
-	"* desconectar:\n" 
+	"  * desconectar:\n" 
 	"	Termina la sesion del usuario.\n"RESET);
 
 	send_to_socket(newsockfd, mensaje);
@@ -651,7 +647,6 @@ check_sensores(struct Estacion stationArray[], int j, char* line2,
 void
 descargar_estacion(int numero, struct Estacion stationArray[], int newsockfd, FILE* stream){
     if(check_estacion_existente(stationArray, &numero) == 0){
-        printf("estacion inexistente, numero %d\n",numero );
         send_to_socket(newsockfd, "Numero de estacion inexistente");
         send_to_socket(newsockfd, endMsg);
         return;
@@ -668,7 +663,6 @@ descargar_estacion(int numero, struct Estacion stationArray[], int newsockfd, FI
         perror("descargar_estacion: udp ready");
         return;
     }
-    printf("udp ready: %s\n", buffer);
     //
 
     //inicializo el cliente udp
@@ -687,10 +681,11 @@ descargar_estacion(int numero, struct Estacion stationArray[], int newsockfd, FI
     sockudp = initialize_udp_client_with_args(&tamano_direccion , &dest_addr, buffer);
 
     //envio filename y espero ack
-    // send_to_socket(newsockfd,"descarga.txt");
-    printf("por enviar descarga.txt\n");
-    send_udp(sockudp, "descarga.txt", &dest_addr, tamano_direccion);
-	// read_from_socket(newsockfd, buffer); //leo el ack
+    char filename[30];
+    snprintf(filename, 30, "estacion%d.txt", stationArray[numero].numero);
+    printf("%s\n", filename);
+    send_udp(sockudp, filename, &dest_addr, tamano_direccion);
+
     recv_udp(sockudp, buffer, &dest_addr, &tamano_direccion);
     if(strcmp(buffer, ack_msg) != 0){
         perror("descargar_estacion: ack invalido");
@@ -708,7 +703,6 @@ descargar_estacion(int numero, struct Estacion stationArray[], int newsockfd, FI
     {
         getline(&cabecera,&len,stream);
         send_udp(sockudp, cabecera, &dest_addr, tamano_direccion);
-        printf("BUFFER-> %s", buffer);
         recv_udp(sockudp, buffer, &dest_addr, &tamano_direccion);
         if(strcmp(buffer, ack_msg) != 0){
             perror("descargar_estacion: ack invalido");
@@ -743,10 +737,7 @@ descargar_estacion(int numero, struct Estacion stationArray[], int newsockfd, FI
         stationArray[numero].dato[i].humedadSuelo3,
         stationArray[numero].dato[i].humedadHoja);
 
-        // send_to_socket(newsockfd, buffer);
         send_udp(sockudp, buffer, &dest_addr, tamano_direccion);
-        printf("BUFFER-> %s\n", buffer);
-        // read_from_socket(newsockfd, buffer); //leo el ack
         recv_udp(sockudp, buffer, &dest_addr, &tamano_direccion);
         if(strcmp(buffer, ack_msg) != 0){
             perror("descargar_estacion: ack invalido");
@@ -757,9 +748,7 @@ descargar_estacion(int numero, struct Estacion stationArray[], int newsockfd, FI
     //
 
     //envio /END y espero ack
-	// send_to_socket(newsockfd,end_UDP_Msg);
     send_udp(sockudp, end_UDP_Msg, &dest_addr, tamano_direccion);
-    // read_from_socket(newsockfd, buffer); //leo el ack
     recv_udp(sockudp, buffer, &dest_addr, &tamano_direccion);
     if(strcmp(buffer, ack_msg) != 0){
         perror("descargar_estacion: ack invalido");
@@ -767,8 +756,6 @@ descargar_estacion(int numero, struct Estacion stationArray[], int newsockfd, FI
         return;
     }
 	send_to_socket(newsockfd,endMsg);
-    //
-    printf("fin de funcion\n");
     //cierro el proceso
     close(sockudp);
 	return;
@@ -797,8 +784,6 @@ procesar_input(int newsockfd, struct Estacion stationArray[], char buffer[], FIL
 	args = malloc(LSH_TOK_BUFSIZE * sizeof(char*));
 	int numTokens;
 	numTokens = split_line(buffer, args);
-	
-    printf("cantidad de tokens: %d\n",numTokens);
 
     if(numTokens == 0){
     	printf("mensaje vacio\n");
@@ -821,7 +806,7 @@ procesar_input(int newsockfd, struct Estacion stationArray[], char buffer[], FIL
         	return;
         }
         send_to_socket(newsockfd,disconnectMsg);
-    	printf( "PROCESO %d. Como recibí 'fin', termino la ejecución.\n\n", getpid() );
+    	printf( "PROCESO %d. Como recibí 'desconectar', termino la ejecución.\n\n", getpid() );
 		exit(0);
     }
 

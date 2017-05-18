@@ -67,7 +67,7 @@ get_ip_address(char address[], int fd){
 	ioctl(fd, SIOCGIFADDR, &ifr);
 
  /* display result */
-	printf("%s\n", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+	// printf("%s\n", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
 	strcpy(address, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
 }
 
@@ -96,7 +96,6 @@ recibir_datos(int sockfd){
 
 	//aviso al servidor que tengo la estructura udp lista
 	send_to_socket(sockfd, udp_ready);
-	printf("envie udp ready\n");
 	
 	//////////////////////////////////////////////
 	//Agregado, negociacion de la direccion IP
@@ -106,18 +105,16 @@ recibir_datos(int sockfd){
 	char address[100];
 	get_ip_address(address, sockfd);
 
-	send_to_socket(sockfd, address);
-
+	// send_to_socket(sockfd, address);
+	char a[15];
+	strcpy(a,"127.0.0.1");
+	send_to_socket(sockfd,a);
 	//////////////////////////////////////////////
 
 	char buffer[TAM];
 	//espero filename
 	recv_udp(sockudp, buffer, &serv_addr, &tamano_direccion);
-	// read_from_socket(sockfd, buffer);
-	printf("recibi filename %s\n",buffer );
-	// send_to_socket(sockfd, ack_msg);
 	send_udp(sockudp, ack_msg, &serv_addr, tamano_direccion);
-	printf("envie ack filename\n");
 	//
 
 	//abro archivo con filename
@@ -125,29 +122,24 @@ recibir_datos(int sockfd){
     fd = fopen(buffer, "wb");
 	//
 
+    printf("Descargando archivo '%s'\n",buffer);
 	//recibo lineas
 	while(1){
-		// printf("esperando en while\n");
-		// read_from_socket(sockfd, buffer);
 		recv_udp(sockudp, buffer, &serv_addr, &tamano_direccion);
 
 		if(strcmp(buffer, end_UDP_Msg) == 0){
-			// send_to_socket(sockfd, ack_msg);
 			send_udp(sockudp, ack_msg, &serv_addr, tamano_direccion);
 			break;
 			//termino la transmision
 		}
-
-		printf("%s\n", buffer);
 	 	fprintf(fd, "%s\n",buffer);	
 		//guardo en archivo
-		// send_to_socket(sockfd,ack_msg);
 		send_udp(sockudp, ack_msg, &serv_addr, tamano_direccion);
 	}
 	//
 
 	//cierro el proceso
-	printf("fin de funcion\n");
+	printf("Transferencia exitosa!\n");
 	close(sockudp);
 	fclose(fd);
 	return;

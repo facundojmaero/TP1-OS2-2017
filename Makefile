@@ -9,32 +9,32 @@ PATHOBJECTS_CLIENTE=$(addprefix $(ODIR)/,$(OBJECTS_CLIENTE))
 OBJECTS_SERVER=sock_srv_i_cc.o funciones_server.o funciones_io.o
 OBJECTS_CLIENTE=sock_cli_i_cc.o funciones_io.o funciones_cliente.o
 
-all: make_dirs sock_cli_i_cc sock_srv_i_cc
+all: make_dirs build/sock_cli_i_cc build/sock_srv_i_cc
 
 make_dirs:
 	mkdir -p obj
 	mkdir -p build
 
-sock_cli_i_cc: $(OBJECTS_CLIENTE)
-	gcc $(PATHOBJECTS_CLIENTE) -o $(BDIR)/$@
+$(BDIR)/sock_cli_i_cc: $(PATHOBJECTS_CLIENTE)
+	gcc $(PATHOBJECTS_CLIENTE) -o $@
 
-sock_srv_i_cc: $(OBJECTS_SERVER)
-	gcc $(PATHOBJECTS_SERVER) -o $(BDIR)/$@
+$(BDIR)/sock_srv_i_cc: $(PATHOBJECTS_SERVER)
+	gcc $(PATHOBJECTS_SERVER) -o $@
 
-sock_cli_i_cc.o: $(SRCDIR)/sock_cli_i_cc.c $(LDIR)/colors.h $(LDIR)/funciones_cliente_cc.h $(LDIR)/comunes.h
-	$(CC) $(CFLAGS) -c $< -o $(ODIR)/$@
+$(ODIR)/sock_cli_i_cc.o: $(SRCDIR)/sock_cli_i_cc.c $(LDIR)/colors.h $(LDIR)/funciones_cliente_cc.h $(LDIR)/comunes.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-sock_srv_i_cc.o: $(SRCDIR)/sock_srv_i_cc.c $(LDIR)/colors.h $(LDIR)/funciones_servidor_cc.h $(LDIR)/comunes.h
-	$(CC) $(CFLAGS) -c $< -o $(ODIR)/$@
+$(ODIR)/sock_srv_i_cc.o: $(SRCDIR)/sock_srv_i_cc.c $(LDIR)/colors.h $(LDIR)/funciones_servidor_cc.h $(LDIR)/comunes.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-funciones_server.o: $(SRCDIR)/funciones_server.c
-	$(CC) $(CFLAGS) -c $< -o $(ODIR)/$@	
+$(ODIR)/funciones_server.o: $(SRCDIR)/funciones_server.c
+	$(CC) $(CFLAGS) -c $< -o $@	
 
-funciones_cliente.o: $(SRCDIR)/funciones_cliente.c $(SRCDIR)/funciones_io.c
-	$(CC) $(CFLAGS) -c $< -o $(ODIR)/$@	
+$(ODIR)/funciones_cliente.o: $(SRCDIR)/funciones_cliente.c $(SRCDIR)/funciones_io.c
+	$(CC) $(CFLAGS) -c $< -o $@	
 
-funciones_io.o: $(SRCDIR)/funciones_io.c
-	$(CC) $(CFLAGS) -c $< -o $(ODIR)/$@	
+$(ODIR)/funciones_io.o: $(SRCDIR)/funciones_io.c
+	$(CC) $(CFLAGS) -c $< -o $@	
 
 cppcheck:
 	@echo
