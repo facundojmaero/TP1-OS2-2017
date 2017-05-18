@@ -48,8 +48,6 @@ initialize_udp_server_with_args(socklen_t *tamano_direccion , struct sockaddr_in
 		exit( 1 );
 	}
 
-    printf( "Socket disponible: %d\n", ntohs(serv_addr->sin_port) );
-
 	*tamano_direccion = sizeof( struct sockaddr );
 	return sockudp;
 }   
@@ -121,6 +119,7 @@ recibir_datos(int sockfd){
 
     printf("Descargando archivo '%s'\n",buffer);
 	//recibo lineas
+	int progreso = 0;
 	while(1){
 		recv_udp(sockudp, buffer, &serv_addr, &tamano_direccion);
 
@@ -129,6 +128,11 @@ recibir_datos(int sockfd){
 			break;
 			//termino la transmision
 		}
+		progreso++;
+		if(progreso%100 == 0){
+			printf(".");
+			fflush(stdout);
+		}
 	 	fprintf(fd, "%s\n",buffer);	
 		//guardo en archivo
 		send_udp(sockudp, ack_msg, &serv_addr, tamano_direccion);
@@ -136,6 +140,7 @@ recibir_datos(int sockfd){
 	//
 
 	//cierro el proceso
+	printf("\n");
 	printf("Transferencia exitosa!\n");
 	close(sockudp);
 	fclose(fd);
